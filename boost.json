@@ -3,7 +3,8 @@
         "cursor",
         "claude_code",
         "codex",
-        "opencode"
+        "opencode",
+        "copilot"
     ],
     "guidelines": true,
     "herd_mcp": true,
@@ -11,6 +12,7 @@
     "sail": false,
     "skills": [
         "livewire-development",
-        "pest-testing"
+        "pest-testing",
+        "tailwindcss-development"
     ]
 }
