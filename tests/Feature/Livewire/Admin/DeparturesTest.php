@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Admin\Departures;
 use App\Models\DepartureTime;
 use Livewire\Livewire;
 
 it('creates a departure time', function () {
-    Livewire::test(Departures::class)
+    Livewire::test('admin.departures')
         ->call('openCreate')
         ->set('name', 'School Drop')
         ->set('departureTime', '07:45')
@@ -30,7 +29,7 @@ it('updates a departure time', function () {
         'is_active' => true,
     ]);
 
-    Livewire::test(Departures::class)
+    Livewire::test('admin.departures')
         ->call('openEdit', $departure->id)
         ->set('name', 'Early Practice')
         ->set('departureTime', '07:30')
@@ -48,7 +47,7 @@ it('updates a departure time', function () {
 it('deletes a departure time', function () {
     $departure = DepartureTime::factory()->create();
 
-    Livewire::test(Departures::class)
+    Livewire::test('admin.departures')
         ->call('delete', $departure->id);
 
     expect(DepartureTime::query()->whereKey($departure->id)->exists())->toBeFalse();
@@ -59,7 +58,7 @@ it('reorders departures', function () {
     $second = DepartureTime::factory()->create(['display_order' => 2]);
     $third = DepartureTime::factory()->create(['display_order' => 3]);
 
-    Livewire::test(Departures::class)
+    Livewire::test('admin.departures')
         ->call('reorder', $third->id, 0);
 
     $ordered = DepartureTime::query()->ordered()->get();

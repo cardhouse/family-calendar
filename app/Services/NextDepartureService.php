@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\CalendarEvent;
 use App\Models\DepartureTime;
+use App\Models\Setting;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -17,7 +18,7 @@ class NextDepartureService
      */
     public function determine(): ?array
     {
-        $now = now();
+        $now = now($this->adminTimezone());
 
         $candidates = $this->departureCandidates()
             ->merge($this->eventCandidates($now))
@@ -77,6 +78,8 @@ class NextDepartureService
      */
     private function eventCandidates(CarbonInterface $now): Collection
     {
+        $timezone = $this->adminTimezone();
+
         return CalendarEvent::query()
             ->upcoming()
             ->withDepartureTime()
@@ -84,12 +87,15 @@ class NextDepartureService
                 $query->ordered()->with(['child', 'routineItem', 'todayCompletion']);
             }])
             ->get()
-            ->map(function (CalendarEvent $event) use ($now) {
+            ->map(function (CalendarEvent $event) use ($now, $timezone) {
                 if ($event->departure_time === null || $event->starts_at === null) {
                     return null;
                 }
 
-                $timestamp = Carbon::parse($event->starts_at->toDateString().' '.$event->departure_time);
+                $timestamp = Carbon::parse(
+                    $event->starts_at->toDateString().' '.$event->departure_time,
+                    $timezone
+                );
 
                 if ($timestamp->lessThanOrEqualTo($now)) {
                     return null;
@@ -105,6 +111,13 @@ class NextDepartureService
             ->filter()
             ->values()
             ->toBase();
+    }
+
+    private function adminTimezone(): string
+    {
+        $timezone = Setting::get('timezone', config('app.timezone'));
+
+        return is_string($timezone) && $timezone !== '' ? $timezone : config('app.timezone');
     }
 
     /**

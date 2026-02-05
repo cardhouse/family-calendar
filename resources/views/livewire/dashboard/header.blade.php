@@ -1,3 +1,16 @@
+<?php
+
+use Livewire\Component;
+
+return new class extends Component
+{
+    /**
+     * @var array<string, mixed>|null
+     */
+    public ?array $nextDeparture = null;
+};
+?>
+
 <div class="grid gap-4 md:grid-cols-3">
     {{-- Clock Panel --}}
     <div class="flex items-center gap-4 rounded-2xl border border-dash-border bg-dash-card p-5">

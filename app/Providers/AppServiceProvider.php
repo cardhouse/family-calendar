@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -29,6 +30,18 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(! app()->isProduction());
 
         $this->configureDefaults();
+        $this->bootstrapTimezone();
+    }
+
+    protected function bootstrapTimezone(): void
+    {
+        try {
+            if (Setting::query()->find('timezone') === null) {
+                Setting::set('timezone', config('app.timezone'));
+            }
+        } catch (\Throwable) {
+            // Settings table may not exist yet (e.g. during migrations).
+        }
     }
 
     protected function configureDefaults(): void

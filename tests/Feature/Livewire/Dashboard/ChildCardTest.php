@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Dashboard\ChildCard;
 use App\Models\Child;
 use App\Models\RoutineAssignment;
 use App\Models\RoutineCompletion;
@@ -22,7 +21,7 @@ it('toggles routine completion for a child assignment', function () {
         $query->with(['routineItem', 'todayCompletion'])->ordered();
     }]);
 
-    Livewire::test(ChildCard::class, ['child' => $child])
+    Livewire::test('dashboard.child-card', ['child' => $child])
         ->call('toggleCompletion', $assignment->id);
 
     expect(RoutineCompletion::query()->where('routine_assignment_id', $assignment->id)->exists())
@@ -32,7 +31,7 @@ it('toggles routine completion for a child assignment', function () {
         $query->with(['routineItem', 'todayCompletion'])->ordered();
     }]);
 
-    Livewire::test(ChildCard::class, ['child' => $child])
+    Livewire::test('dashboard.child-card', ['child' => $child])
         ->call('toggleCompletion', $assignment->id);
 
     expect(RoutineCompletion::query()->where('routine_assignment_id', $assignment->id)->exists())
@@ -57,7 +56,7 @@ it('updates visibility when show completed is toggled', function () {
         $query->with(['routineItem', 'todayCompletion'])->ordered();
     }]);
 
-    $component = Livewire::test(ChildCard::class, ['child' => $child])
+    $component = Livewire::test('dashboard.child-card', ['child' => $child])
         ->dispatch('dashboard:toggle-completed', show: false)
         ->assertSet('showCompleted', false);
 

@@ -1,3 +1,66 @@
+<?php
+
+use App\Models\CalendarEvent;
+use App\Models\Child;
+use App\Services\NextDepartureService;
+use Illuminate\Database\Eloquent\Collection;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+
+return new class extends Component
+{
+    #[Layout('layouts::app')]
+    /**
+     * @var Collection<int, Child>
+     */
+    public Collection $children;
+
+    /**
+     * @var Collection<int, CalendarEvent>
+     */
+    public Collection $upcomingEvents;
+
+    /**
+     * @var array<string, mixed>|null
+     */
+    public ?array $nextDeparture = null;
+
+    public function mount(): void
+    {
+        $this->children = $this->loadChildren();
+        $this->upcomingEvents = $this->loadUpcomingEvents();
+        $this->nextDeparture = app(NextDepartureService::class)->determine();
+    }
+
+    /**
+     * @return Collection<int, Child>
+     */
+    private function loadChildren(): Collection
+    {
+        return Child::query()
+            ->ordered()
+            ->with([
+                'dailyRoutineAssignments' => function ($query) {
+                    $query->ordered()
+                        ->with(['routineItem', 'todayCompletion']);
+                },
+            ])
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, CalendarEvent>
+     */
+    private function loadUpcomingEvents(): Collection
+    {
+        return CalendarEvent::query()
+            ->upcoming()
+            ->limit(3)
+            ->get();
+    }
+};
+?>
+
 <div class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <div class="fixed right-4 top-4 z-50 opacity-50 transition-opacity hover:opacity-100">

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Admin\Routines;
 use App\Models\CalendarEvent;
 use App\Models\Child;
 use App\Models\DepartureTime;
@@ -11,7 +10,7 @@ use App\Models\RoutineItemLibrary;
 use Livewire\Livewire;
 
 it('creates a routine library item', function () {
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->call('openLibraryCreate')
         ->set('libraryName', 'Brush Teeth')
         ->call('saveLibrary');
@@ -22,7 +21,7 @@ it('creates a routine library item', function () {
 it('updates a routine library item', function () {
     $routineItem = RoutineItemLibrary::factory()->create(['name' => 'Wake Up']);
 
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->call('openLibraryEdit', $routineItem->id)
         ->set('libraryName', 'Wake Up Gentle')
         ->call('saveLibrary');
@@ -33,7 +32,7 @@ it('updates a routine library item', function () {
 it('deletes a routine library item', function () {
     $routineItem = RoutineItemLibrary::factory()->create();
 
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->call('deleteLibrary', $routineItem->id);
 
     expect(RoutineItemLibrary::query()->whereKey($routineItem->id)->exists())->toBeFalse();
@@ -44,7 +43,7 @@ it('reorders routine library items', function () {
     $second = RoutineItemLibrary::factory()->create(['display_order' => 2]);
     $third = RoutineItemLibrary::factory()->create(['display_order' => 3]);
 
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->call('reorderLibrary', $third->id, 0);
 
     $ordered = RoutineItemLibrary::query()->ordered()->get();
@@ -57,7 +56,7 @@ it('assigns a routine to a child daily bucket', function () {
     $child = Child::factory()->create();
     $routineItem = RoutineItemLibrary::factory()->create();
 
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->call('assignRoutine', $routineItem->id, $child->id);
 
     $assignment = RoutineAssignment::query()
@@ -77,7 +76,7 @@ it('reorders assignments within a bucket', function () {
     $second = RoutineAssignment::factory()->create(['child_id' => $child->id, 'display_order' => 2]);
     $third = RoutineAssignment::factory()->create(['child_id' => $child->id, 'display_order' => 3]);
 
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->call('reorderAssignment', $third->id, 0);
 
     $ordered = RoutineAssignment::query()
@@ -96,7 +95,7 @@ it('assigns a routine to an event bucket', function () {
     $routineItem = RoutineItemLibrary::factory()->create();
     $event = CalendarEvent::factory()->create();
 
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->set('activeTab', 'events')
         ->set('selectedEventId', $event->id)
         ->call('assignRoutine', $routineItem->id, $child->id);
@@ -114,7 +113,7 @@ it('assigns a routine to a departure bucket', function () {
     $routineItem = RoutineItemLibrary::factory()->create();
     $departure = DepartureTime::factory()->create();
 
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->set('activeTab', 'departures')
         ->set('selectedDepartureId', $departure->id)
         ->call('assignRoutine', $routineItem->id, $child->id);
@@ -131,7 +130,7 @@ it('prevents duplicate daily routine assignments', function () {
     $child = Child::factory()->create();
     $routineItem = RoutineItemLibrary::factory()->create();
 
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->call('assignRoutine', $routineItem->id, $child->id)
         ->call('assignRoutine', $routineItem->id, $child->id)
         ->assertHasErrors(['assignment']);
@@ -144,7 +143,7 @@ it('prevents duplicate event routine assignments', function () {
     $routineItem = RoutineItemLibrary::factory()->create();
     $event = CalendarEvent::factory()->create();
 
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->set('activeTab', 'events')
         ->set('selectedEventId', $event->id)
         ->call('assignRoutine', $routineItem->id, $child->id)
@@ -164,7 +163,7 @@ it('prevents duplicate departure routine assignments', function () {
     $routineItem = RoutineItemLibrary::factory()->create();
     $departure = DepartureTime::factory()->create();
 
-    Livewire::test(Routines::class)
+    Livewire::test('admin.routines')
         ->set('activeTab', 'departures')
         ->set('selectedDepartureId', $departure->id)
         ->call('assignRoutine', $routineItem->id, $child->id)

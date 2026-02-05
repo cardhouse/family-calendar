@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Dashboard\Footer;
 use App\Models\CalendarEvent;
 use Livewire\Livewire;
 
@@ -14,6 +13,6 @@ it('renders upcoming events in order', function () {
 
     $events = CalendarEvent::query()->upcoming()->limit(3)->get();
 
-    Livewire::test(Footer::class, ['events' => $events])
+    Livewire::test('dashboard.footer', ['events' => $events])
         ->assertSeeInOrder([$first->name, $second->name, $third->name]);
 });

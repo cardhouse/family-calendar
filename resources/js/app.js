@@ -35,8 +35,10 @@ window.DashboardTime = {
                 }
 
                 const totalSeconds = Math.floor(diff / 1000);
-                const minutes = Math.floor(totalSeconds / 60);
+                const totalMinutes = Math.floor(totalSeconds / 60);
+                const minutes = totalMinutes;
                 const seconds = totalSeconds % 60;
+                const hours = Math.floor(totalMinutes / 60);
 
                 if (minutes < 10) {
                     this.urgencyClass = 'text-red-400 font-semibold';
@@ -46,7 +48,11 @@ window.DashboardTime = {
                     this.urgencyClass = 'text-emerald-300';
                 }
 
-                this.timeLeft = `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+                if (hours > 0) {
+                    this.timeLeft = `${hours}h ${totalMinutes % 60}m`;
+                } else {
+                    this.timeLeft = `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+                }
             },
         };
     },

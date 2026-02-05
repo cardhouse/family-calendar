@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Dashboard;
 use App\Models\CalendarEvent;
 use App\Models\Child;
 use App\Models\RoutineAssignment;
@@ -29,7 +28,7 @@ it('loads children with eager loaded assignments', function () {
         'starts_at' => now()->addDay(),
     ]);
 
-    $component = Livewire::test(Dashboard::class);
+    $component = Livewire::test('dashboard');
     $children = $component->get('children');
 
     expect($children)->toHaveCount(1);

@@ -1,3 +1,22 @@
+<?php
+
+use Illuminate\Database\Eloquent\Collection;
+use Livewire\Component;
+
+return new class extends Component
+{
+    /**
+     * @var Collection<int, \App\Models\CalendarEvent>
+     */
+    public Collection $events;
+
+    public function mount(Collection $events): void
+    {
+        $this->events = $events;
+    }
+};
+?>
+
 <div class="rounded-3xl border border-dash-border bg-dash-card p-6">
     <div class="flex items-center gap-3">
         <flux:icon name="calendar" variant="outline" class="size-6 text-blue-400" />

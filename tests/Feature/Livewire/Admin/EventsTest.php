@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Admin\Events;
 use App\Models\CalendarEvent;
 use Livewire\Livewire;
 
 it('creates an event', function () {
     $startsAt = now()->addDay()->format('Y-m-d\TH:i');
 
-    Livewire::test(Events::class)
+    Livewire::test('admin.events')
         ->call('openCreate')
         ->set('name', 'Field Trip')
         ->set('startsAt', $startsAt)
@@ -32,7 +31,7 @@ it('updates an event', function () {
         'color' => '#f97316',
     ]);
 
-    Livewire::test(Events::class)
+    Livewire::test('admin.events')
         ->call('openEdit', $event->id)
         ->set('name', 'Morning Practice')
         ->set('startsAt', now()->addDays(2)->format('Y-m-d\TH:i'))
@@ -51,7 +50,7 @@ it('updates an event', function () {
 it('deletes an event', function () {
     $event = CalendarEvent::factory()->create();
 
-    Livewire::test(Events::class)
+    Livewire::test('admin.events')
         ->call('delete', $event->id);
 
     expect(CalendarEvent::query()->whereKey($event->id)->exists())->toBeFalse();
