@@ -22,6 +22,11 @@ class ChildCard extends Component
         $this->child = $child;
     }
 
+    public function hydrate(): void
+    {
+        $this->reloadAssignments();
+    }
+
     #[On('dashboard:toggle-completed')]
     public function handleToggleCompleted(bool $show): void
     {
@@ -40,20 +45,26 @@ class ChildCard extends Component
 
         if ($completion !== null) {
             $completion->delete();
-            $assignment->setRelation('todayCompletion', null);
-
-            return;
+        } else {
+            RoutineCompletion::query()->firstOrCreate(
+                [
+                    'routine_assignment_id' => $assignment->id,
+                    'completion_date' => now()->toDateString(),
+                ],
+                ['completed_at' => now()]
+            );
         }
 
-        $completion = RoutineCompletion::query()->firstOrCreate(
-            [
-                'routine_assignment_id' => $assignment->id,
-                'completion_date' => now()->toDateString(),
-            ],
-            ['completed_at' => now()]
-        );
+        $this->reloadAssignments();
+    }
 
-        $assignment->setRelation('todayCompletion', $completion);
+    private function reloadAssignments(): void
+    {
+        $this->child->load([
+            'dailyRoutineAssignments' => fn ($query) => $query
+                ->ordered()
+                ->with(['routineItem', 'todayCompletion']),
+        ]);
     }
 
     /**

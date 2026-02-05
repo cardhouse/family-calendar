@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -29,5 +30,14 @@ class RoutineItemLibrary extends Model
     public function assignments(): HasMany
     {
         return $this->hasMany(RoutineAssignment::class, 'routine_item_id');
+    }
+
+    /**
+     * @param  Builder<RoutineItemLibrary>  $query
+     * @return Builder<RoutineItemLibrary>
+     */
+    public function scopeOrdered(Builder $query): Builder
+    {
+        return $query->orderBy('display_order');
     }
 }
