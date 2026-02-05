@@ -48,9 +48,26 @@
         @endforelse
     </div>
 
+    @if ($confettiEnabled && $shouldCelebrate)
+        <div class="mt-4 flex items-center gap-1 overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
+            @for ($i = 0; $i < 12; $i++)
+                <span
+                    @class([
+                        'h-2 w-2 animate-bounce rounded-full',
+                        'bg-cyan-300' => $i % 4 === 0,
+                        'bg-emerald-300' => $i % 4 === 1,
+                        'bg-amber-300' => $i % 4 === 2,
+                        'bg-rose-300' => $i % 4 === 3,
+                    ])
+                    style="animation-delay: {{ $i * 0.05 }}s;"
+                ></span>
+            @endfor
+        </div>
+    @endif
+
     @if ($this->isComplete)
         <div class="mt-4 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-            All set for the day. Great work!
+            {{ $celebrationMessage ?? 'All set for the day. Great work!' }}
         </div>
     @endif
 </div>

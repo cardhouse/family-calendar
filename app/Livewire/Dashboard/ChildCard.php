@@ -17,14 +17,39 @@ class ChildCard extends Component
 
     public bool $showCompleted = true;
 
+    /**
+     * @var list<string>
+     */
+    public array $celebrationMessages = [
+        'Awesome focus. You crushed every step!',
+        'Checklist complete. Morning mission accomplished!',
+        'Everything is done. Great teamwork!',
+        'You finished every routine item. Nice work!',
+    ];
+
+    public ?string $celebrationMessage = null;
+
+    public bool $confettiEnabled = true;
+
+    public bool $shouldCelebrate = false;
+
+    public bool $wasComplete = false;
+
     public function mount(Child $child): void
     {
         $this->child = $child;
+        $this->reloadAssignments();
+        $this->wasComplete = $this->isChecklistComplete();
+
+        if ($this->wasComplete) {
+            $this->celebrationMessage = $this->randomCelebrationMessage();
+        }
     }
 
     public function hydrate(): void
     {
         $this->reloadAssignments();
+        $this->syncCelebrationState(false);
     }
 
     #[On('dashboard:toggle-completed')]
@@ -56,6 +81,7 @@ class ChildCard extends Component
         }
 
         $this->reloadAssignments();
+        $this->syncCelebrationState(true);
     }
 
     private function reloadAssignments(): void
@@ -110,12 +136,44 @@ class ChildCard extends Component
     #[Computed]
     public function isComplete(): bool
     {
-        return $this->assignments->isNotEmpty()
-            && $this->assignments->every(fn ($assignment) => $assignment->todayCompletion !== null);
+        return $this->isChecklistComplete();
     }
 
     public function render(): mixed
     {
         return view('livewire.dashboard.child-card');
+    }
+
+    private function isChecklistComplete(): bool
+    {
+        return $this->assignments->isNotEmpty()
+            && $this->assignments->every(fn ($assignment) => $assignment->todayCompletion !== null);
+    }
+
+    private function syncCelebrationState(bool $allowNewCelebration): void
+    {
+        $isComplete = $this->isChecklistComplete();
+
+        if (! $isComplete) {
+            $this->celebrationMessage = null;
+            $this->shouldCelebrate = false;
+            $this->wasComplete = false;
+
+            return;
+        }
+
+        if ($allowNewCelebration && ! $this->wasComplete) {
+            $this->celebrationMessage = $this->randomCelebrationMessage();
+            $this->shouldCelebrate = true;
+        } else {
+            $this->shouldCelebrate = false;
+        }
+
+        $this->wasComplete = true;
+    }
+
+    private function randomCelebrationMessage(): string
+    {
+        return $this->celebrationMessages[array_rand($this->celebrationMessages)];
     }
 }

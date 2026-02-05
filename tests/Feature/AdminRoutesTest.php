@@ -5,7 +5,9 @@ declare(strict_types=1);
 it('renders admin routes', function () {
     $this->get('/admin/children')
         ->assertSuccessful()
-        ->assertSeeLivewire('admin.children');
+        ->assertSeeLivewire('admin.children')
+        ->assertSee(route('home'), false)
+        ->assertSee('Back to Dashboard');
 
     $this->get('/admin/departures')
         ->assertSuccessful()

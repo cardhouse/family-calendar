@@ -19,6 +19,14 @@ it('creates a routine library item', function () {
     expect(RoutineItemLibrary::query()->where('name', 'Brush Teeth')->exists())->toBeTrue();
 });
 
+it('quick adds a routine library item', function () {
+    Livewire::test(Routines::class)
+        ->set('quickLibraryName', 'Pack Backpack')
+        ->call('addLibraryQuick');
+
+    expect(RoutineItemLibrary::query()->where('name', 'Pack Backpack')->exists())->toBeTrue();
+});
+
 it('updates a routine library item', function () {
     $routineItem = RoutineItemLibrary::factory()->create(['name' => 'Wake Up']);
 
@@ -89,6 +97,22 @@ it('reorders assignments within a bucket', function () {
 
     expect($ordered->first()->is($third))->toBeTrue()
         ->and($ordered->last()->is($second))->toBeTrue();
+});
+
+it('removes an assignment from a bucket and resequences order', function () {
+    $child = Child::factory()->create();
+
+    $first = RoutineAssignment::factory()->create(['child_id' => $child->id, 'display_order' => 1]);
+    $second = RoutineAssignment::factory()->create(['child_id' => $child->id, 'display_order' => 2]);
+
+    Livewire::test(Routines::class)
+        ->call('removeAssignment', $first->id);
+
+    $remaining = RoutineAssignment::query()->whereKey($second->id)->first();
+
+    expect(RoutineAssignment::query()->whereKey($first->id)->exists())->toBeFalse()
+        ->and($remaining)->not->toBeNull()
+        ->and($remaining?->display_order)->toBe(1);
 });
 
 it('assigns a routine to an event bucket', function () {

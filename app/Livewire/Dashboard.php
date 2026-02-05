@@ -29,11 +29,16 @@ class Dashboard extends Component
      */
     public ?array $nextDeparture = null;
 
+    public bool $hasAnyAssignments = false;
+
     public function mount(): void
     {
         $this->children = $this->loadChildren();
         $this->upcomingEvents = $this->loadUpcomingEvents();
         $this->nextDeparture = app(NextDepartureService::class)->determine();
+        $this->hasAnyAssignments = $this->children->contains(
+            fn (Child $child): bool => $child->dailyRoutineAssignments->isNotEmpty()
+        );
     }
 
     public function render(): mixed

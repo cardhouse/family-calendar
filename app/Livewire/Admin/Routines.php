@@ -49,6 +49,8 @@ class Routines extends Component
 
     public ?int $selectedDepartureId = null;
 
+    public string $quickLibraryName = '';
+
     public function mount(): void
     {
         $this->routineItems = $this->loadRoutineItems();
@@ -95,6 +97,23 @@ class Routines extends Component
         }
 
         $this->showLibraryModal = false;
+        $this->routineItems = $this->loadRoutineItems();
+    }
+
+    public function addLibraryQuick(): void
+    {
+        $validated = $this->validate([
+            'quickLibraryName' => ['required', 'string', 'max:255'],
+        ]);
+
+        $order = (int) RoutineItemLibrary::query()->max('display_order');
+
+        RoutineItemLibrary::query()->create([
+            'name' => $validated['quickLibraryName'],
+            'display_order' => $order + 1,
+        ]);
+
+        $this->quickLibraryName = '';
         $this->routineItems = $this->loadRoutineItems();
     }
 
@@ -192,6 +211,24 @@ class Routines extends Component
         $assignments->splice($position, 0, [$moving]);
 
         $assignments->values()->each(function (RoutineAssignment $item, int $index): void {
+            $item->update(['display_order' => $index + 1]);
+        });
+    }
+
+    public function removeAssignment(int $assignmentId): void
+    {
+        $assignment = RoutineAssignment::query()->findOrFail($assignmentId);
+
+        $childId = $assignment->child_id;
+        $assignableType = $assignment->assignable_type;
+        $assignableId = $assignment->assignable_id;
+
+        $assignment->delete();
+
+        $query = RoutineAssignment::query()->where('child_id', $childId);
+        $this->applyAssignableScope($query, $assignableType, $assignableId);
+
+        $query->ordered()->get()->values()->each(function (RoutineAssignment $item, int $index): void {
             $item->update(['display_order' => $index + 1]);
         });
     }

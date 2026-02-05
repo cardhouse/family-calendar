@@ -47,3 +47,11 @@ it('loads children with eager loaded assignments', function () {
 
     expect($events)->toHaveCount(3);
 });
+
+it('shows no-routines-assigned empty state when children have no daily assignments', function () {
+    Child::factory()->create(['display_order' => 1]);
+
+    Livewire::test(Dashboard::class)
+        ->assertSee('No routines assigned yet')
+        ->assertSee('Open routine manager');
+});

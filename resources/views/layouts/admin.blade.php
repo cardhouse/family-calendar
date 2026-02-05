@@ -17,6 +17,12 @@
                     <div class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Family Calendar</div>
                     <div class="text-2xl font-semibold text-slate-900">Admin</div>
                 </div>
+                <a
+                    href="{{ route('home') }}"
+                    class="inline-flex items-center justify-center rounded-full border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+                >
+                    Back to Dashboard
+                </a>
                 <nav class="flex flex-col gap-2 text-sm">
                     <a class="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100" href="{{ route('admin.children') }}">Children</a>
                     <a class="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100" href="{{ route('admin.departures') }}">Departures</a>

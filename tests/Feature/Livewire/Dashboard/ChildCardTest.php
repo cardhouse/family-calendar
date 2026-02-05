@@ -63,3 +63,30 @@ it('updates visibility when show completed is toggled', function () {
 
     expect($component->get('visibleAssignments'))->toHaveCount(0);
 });
+
+it('shows a celebration message when all assignments are complete', function () {
+    $child = Child::factory()->create();
+    $item = RoutineItemLibrary::factory()->create();
+
+    $assignment = RoutineAssignment::factory()->create([
+        'child_id' => $child->id,
+        'routine_item_id' => $item->id,
+    ]);
+
+    RoutineCompletion::factory()->create([
+        'routine_assignment_id' => $assignment->id,
+        'completion_date' => now()->toDateString(),
+    ]);
+
+    $child->load(['dailyRoutineAssignments' => function ($query) {
+        $query->with(['routineItem', 'todayCompletion'])->ordered();
+    }]);
+
+    $component = Livewire::test(ChildCard::class, ['child' => $child]);
+
+    $message = $component->get('celebrationMessage');
+
+    expect($message)->not->toBeNull();
+
+    $component->assertSee((string) $message);
+});

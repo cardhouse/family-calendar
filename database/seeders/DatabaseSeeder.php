@@ -111,9 +111,22 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        Setting::query()->create([
-            'key' => 'weather.units',
-            'value' => 'fahrenheit',
-        ]);
+        Setting::query()->updateOrCreate(
+            ['key' => 'weather.location'],
+            ['value' => [
+                'name' => 'San Francisco',
+                'admin1' => 'California',
+                'country' => 'United States',
+                'latitude' => 37.7749,
+                'longitude' => -122.4194,
+                'timezone' => 'America/Los_Angeles',
+            ]]
+        );
+
+        Setting::query()->updateOrCreate(['key' => 'weather.units'], ['value' => 'fahrenheit']);
+        Setting::query()->updateOrCreate(['key' => 'weather.widget_size'], ['value' => 'medium']);
+        Setting::query()->updateOrCreate(['key' => 'weather.show_feels_like'], ['value' => true]);
+        Setting::query()->updateOrCreate(['key' => 'weather.precipitation_alerts'], ['value' => true]);
+        Setting::query()->updateOrCreate(['key' => 'weather.enabled'], ['value' => true]);
     }
 }

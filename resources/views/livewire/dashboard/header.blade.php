@@ -30,11 +30,22 @@
             @endif
         </div>
 
-        <div class="flex flex-col gap-2">
+        <div class="flex min-w-0 flex-col gap-2 lg:w-80">
             <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Weather</p>
-            <div class="rounded-full border border-slate-800 bg-slate-900/60 px-4 py-2 text-sm text-slate-300">
-                Weather coming soon
-            </div>
+            @if ($weatherEnabled)
+                <livewire:weather-widget
+                    :size="$weatherSize"
+                    :units="$weatherUnits"
+                    :show-feels-like="$weatherShowFeelsLike"
+                    :show-precipitation-alerts="$weatherPrecipitationAlerts"
+                    :location="$weatherLocation"
+                    wire:key="dashboard-weather-widget"
+                />
+            @else
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-400">
+                    Weather widget disabled in admin settings.
+                </div>
+            @endif
         </div>
     </div>
 </div>
