@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.admin')]
+#[Layout('layouts::admin')]
 class Events extends Component
 {
     /**

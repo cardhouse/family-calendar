@@ -1,8 +1,9 @@
-<div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-    <div class="flex items-center justify-between">
+<div class="rounded-3xl border border-dash-border bg-dash-card p-6">
+    <div class="flex items-center gap-3">
+        <flux:icon name="calendar" variant="outline" class="size-6 text-blue-400" />
         <div>
-            <h3 class="text-lg font-semibold text-slate-100">Upcoming events</h3>
-            <p class="text-sm text-slate-400">Next three calendar moments.</p>
+            <flux:heading size="lg" class="font-extrabold text-slate-100">Upcoming events</flux:heading>
+            <flux:text class="text-slate-400">Next three calendar moments.</flux:text>
         </div>
     </div>
 
@@ -10,10 +11,11 @@
         @forelse ($events as $event)
             <div
                 wire:key="event-{{ $event->id }}"
-                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3"
+                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-dash-border bg-dash-card px-4 py-3"
+                style="border-left: 4px solid {{ $event->color ?? '#64748b' }};"
             >
                 <div>
-                    <div class="text-sm font-semibold text-slate-100">{{ $event->name }}</div>
+                    <div class="text-sm font-bold text-slate-100">{{ $event->name }}</div>
                     <div class="text-xs text-slate-400">
                         {{ $event->starts_at?->format('D M j, g:i A') }}
                     </div>
@@ -21,14 +23,15 @@
                 @if ($event->starts_at)
                     <div
                         x-data="DashboardTime.eventCountdown({{ $event->starts_at->timestamp }})"
-                        class="text-sm font-semibold text-slate-200"
+                        class="rounded-full bg-slate-800 px-3 py-1 text-sm font-bold text-slate-200"
                         x-text="timeLeft"
                     ></div>
                 @endif
             </div>
         @empty
-            <div class="rounded-2xl border border-dashed border-slate-800 px-4 py-6 text-center text-sm text-slate-400">
-                No upcoming events yet.
+            <div class="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-dash-border px-4 py-8 text-center text-sm text-slate-400">
+                <flux:icon name="calendar-days" variant="outline" class="size-6" />
+                <span>No upcoming events yet.</span>
             </div>
         @endforelse
     </div>

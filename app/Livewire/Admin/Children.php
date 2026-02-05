@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.admin')]
+#[Layout('layouts::admin')]
 class Children extends Component
 {
     /**

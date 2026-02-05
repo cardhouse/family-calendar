@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.admin')]
+#[Layout('layouts::admin')]
 class Routines extends Component
 {
     /**
@@ -196,6 +196,19 @@ class Routines extends Component
         });
     }
 
+    public function removeAssignment(int $assignmentId): void
+    {
+        $assignment = RoutineAssignment::query()->findOrFail($assignmentId);
+
+        RoutineAssignment::query()->whereKey($assignmentId)->delete();
+
+        $this->resequenceAssignments(
+            $assignment->child_id,
+            $assignment->assignable_type,
+            $assignment->assignable_id
+        );
+    }
+
     public function updatedActiveTab(): void
     {
         $this->resetErrorBag('assignment');
@@ -324,6 +337,17 @@ class Routines extends Component
         $items = RoutineItemLibrary::query()->ordered()->get();
 
         $items->values()->each(function (RoutineItemLibrary $item, int $index): void {
+            $item->update(['display_order' => $index + 1]);
+        });
+    }
+
+    private function resequenceAssignments(int $childId, ?string $assignableType, ?int $assignableId): void
+    {
+        $assignments = RoutineAssignment::query()->where('child_id', $childId);
+
+        $this->applyAssignableScope($assignments, $assignableType, $assignableId);
+
+        $assignments->ordered()->get()->values()->each(function (RoutineAssignment $item, int $index): void {
             $item->update(['display_order' => $index + 1]);
         });
     }

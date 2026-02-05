@@ -7,7 +7,7 @@ namespace App\Livewire\Admin;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.admin')]
+#[Layout('layouts::admin')]
 class Weather extends Component
 {
     public function render(): mixed

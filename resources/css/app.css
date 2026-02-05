@@ -4,5 +4,53 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-dash-bg: #0f172a;
+    --color-dash-card: #1e293b;
+    --color-dash-card-hover: #334155;
+    --color-dash-border: #334155;
+}
+
+@keyframes checkmark-pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes celebration-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes progress-fill {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+@keyframes card-complete-glow {
+    0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
+    50% { box-shadow: 0 0 24px 4px rgba(52, 211, 153, 0.15); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+.animate-checkmark {
+    animation: checkmark-pop 0.3s ease-out;
+}
+
+.animate-celebration {
+    animation: celebration-bounce 0.5s ease-in-out 3;
+}
+
+.animate-progress {
+    transform-origin: left;
+    animation: progress-fill 0.6s ease-out;
+}
+
+.animate-complete-glow {
+    animation: card-complete-glow 1.5s ease-in-out;
+}
+
+.touch-target-lg {
+    min-height: 56px;
 }

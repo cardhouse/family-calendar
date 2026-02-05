@@ -1,16 +1,13 @@
 <div class="space-y-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Children</h1>
-            <p class="text-sm text-slate-500">Manage the kids shown on the morning dashboard.</p>
+        <div class="flex items-center gap-3">
+            <flux:icon name="face-smile" variant="outline" class="size-7 text-amber-500" />
+            <div>
+                <flux:heading size="xl" level="1">Children</flux:heading>
+                <flux:text>Manage the kids shown on the morning dashboard.</flux:text>
+            </div>
         </div>
-        <button
-            type="button"
-            wire:click="openCreate"
-            class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-        >
-            Add child
-        </button>
+        <flux:button variant="primary" wire:click="openCreate">Add child</flux:button>
     </div>
 
     <div class="space-y-3" wire:sort="reorder">
@@ -18,95 +15,58 @@
             <div
                 wire:key="child-{{ $child->id }}"
                 wire:sort:item="{{ $child->id }}"
-                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3"
+                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white px-5 py-4 shadow-sm transition-all hover:border-amber-300/60 hover:shadow-md"
             >
-                <div class="flex items-center gap-3">
-                    <span class="h-10 w-10 rounded-2xl" style="background-color: {{ $child->avatar_color }};"></span>
+                <div class="flex items-center gap-4">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-full text-lg font-black text-white shadow"
+                        style="background-color: {{ $child->avatar_color }};"
+                    >
+                        {{ strtoupper(mb_substr($child->name, 0, 1)) }}
+                    </div>
                     <div>
-                        <div class="text-sm font-semibold text-slate-900">{{ $child->name }}</div>
-                        <div class="text-xs text-slate-500">Display order {{ $child->display_order }}</div>
+                        <div class="text-sm font-bold text-slate-900">{{ $child->name }}</div>
+                        <div class="text-xs text-slate-400">Position {{ $child->display_order }}</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button
-                        type="button"
-                        wire:click="openEdit({{ $child->id }})"
-                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
-                    >
-                        Edit
-                    </button>
-                    <button
-                        type="button"
-                        wire:click="delete({{ $child->id }})"
-                        class="rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600"
-                    >
-                        Delete
-                    </button>
+                    <flux:button size="xs" variant="subtle" wire:click="openEdit({{ $child->id }})">Edit</flux:button>
+                    <flux:button size="xs" variant="danger" wire:click="delete({{ $child->id }})">Delete</flux:button>
                 </div>
             </div>
         @empty
-            <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-500">
-                No children yet. Add the first profile to start organizing routines.
+            <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500">
+                <flux:icon name="face-smile" variant="outline" class="size-8 text-slate-300" />
+                <span>No children yet. Add the first profile to start organizing routines.</span>
             </div>
         @endforelse
     </div>
 
-    @if ($showModal)
-        <div class="fixed inset-0 z-40 bg-slate-900/40"></div>
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <form
-                wire:submit.prevent="save"
-                class="w-full max-w-lg rounded-3xl bg-white p-6 shadow-xl"
-            >
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        {{ $editingId ? 'Edit child' : 'Add child' }}
-                    </h2>
-                    <button type="button" class="text-sm text-slate-500" wire:click="$set('showModal', false)">
-                        Close
-                    </button>
-                </div>
+    <flux:modal wire:model.self="showModal" class="md:w-96">
+        <form wire:submit.prevent="save" class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ $editingId ? 'Edit child' : 'Add child' }}</flux:heading>
+                <flux:text class="mt-2">{{ $editingId ? 'Update child details.' : 'Add a new child profile.' }}</flux:text>
+            </div>
 
-                <div class="mt-6 space-y-4">
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Name</label>
-                        <input
-                            type="text"
-                            wire:model="name"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm"
-                        />
-                        @error('name')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Avatar color</label>
-                        <div class="mt-2 flex items-center gap-3">
-                            <input type="color" wire:model="avatarColor" class="h-10 w-14 rounded-lg border" />
-                            <span class="text-xs text-slate-500">{{ $avatarColor }}</span>
-                        </div>
-                        @error('avatarColor')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
+            <flux:input wire:model="name" label="Name" />
 
-                <div class="mt-6 flex justify-end gap-3">
-                    <button
-                        type="button"
-                        class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600"
-                        wire:click="$set('showModal', false)"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-                    >
-                        Save child
-                    </button>
+            <div>
+                <flux:label>Avatar color</flux:label>
+                <div class="mt-2 flex items-center gap-3">
+                    <input type="color" wire:model="avatarColor" class="h-10 w-14 rounded-lg border" />
+                    <flux:text>{{ $avatarColor }}</flux:text>
                 </div>
-            </form>
-        </div>
-    @endif
+                <flux:error name="avatarColor" />
+            </div>
+
+            <div class="flex">
+                <flux:spacer />
+                <div class="flex gap-3">
+                    <flux:button wire:click="$set('showModal', false)">Cancel</flux:button>
+                    <flux:button type="submit" variant="primary">Save child</flux:button>
+                </div>
+            </div>
+        </form>
+    </flux:modal>
 </div>

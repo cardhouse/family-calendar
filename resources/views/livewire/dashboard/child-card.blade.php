@@ -1,56 +1,82 @@
-<div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-sm">
+<div
+    class="rounded-3xl border border-dash-border bg-dash-card p-6 shadow-sm transition-shadow"
+    style="border-top: 4px solid {{ $child->avatar_color }}; background: linear-gradient(180deg, {{ $child->avatar_color }}08 0%, transparent 20%), var(--color-dash-card);"
+    @class(['animate-complete-glow' => $this->isComplete])
+>
     <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-            <div class="h-10 w-10 rounded-2xl" style="background-color: {{ $child->avatar_color }};"></div>
+        <div class="flex items-center gap-4">
+            <div
+                class="flex h-14 w-14 items-center justify-center rounded-full text-2xl font-black text-white shadow-lg"
+                style="background-color: {{ $child->avatar_color }};"
+            >
+                {{ strtoupper(mb_substr($child->name, 0, 1)) }}
+            </div>
             <div>
-                <h3 class="text-lg font-semibold text-slate-100">{{ $child->name }}</h3>
-                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Checklist</p>
+                <flux:heading size="lg" class="font-extrabold text-slate-100">{{ $child->name }}</flux:heading>
+                <flux:text class="text-sm text-slate-400">
+                    {{ $this->assignments->filter(fn ($a) => $a->todayCompletion !== null)->count() }} of {{ $this->assignments->count() }} done
+                </flux:text>
             </div>
         </div>
-        <div class="text-sm font-semibold text-slate-200">{{ $this->progressPercent }}%</div>
+        <div class="text-2xl font-black text-slate-200">{{ $this->progressPercent }}%</div>
     </div>
 
-    <div class="mt-4 h-2 w-full rounded-full bg-slate-800">
+    <div class="mt-4 h-3 w-full overflow-hidden rounded-full bg-slate-800">
         <div
-            class="h-2 rounded-full bg-emerald-400 transition-all"
-            style="width: {{ $this->progressPercent }}%;"
+            class="h-3 rounded-full transition-all duration-500 ease-out"
+            style="width: {{ $this->progressPercent }}%; background: linear-gradient(90deg, #fbbf24, #34d399);"
         ></div>
     </div>
 
-    <div class="mt-6 flex flex-col gap-3">
+    <div class="mt-5 flex flex-col gap-3">
         @forelse ($this->visibleAssignments as $assignment)
             <button
                 type="button"
                 wire:key="assignment-{{ $assignment->id }}"
                 wire:click="toggleCompletion({{ $assignment->id }})"
-                class="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left"
+                @class([
+                    'flex items-center gap-4 rounded-2xl border-2 px-5 py-4 text-left transition-all active:scale-[0.98] touch-target-lg',
+                    'border-emerald-500/30 bg-emerald-500/5' => $assignment->todayCompletion,
+                    'border-dash-border bg-dash-card hover:bg-dash-card-hover' => ! $assignment->todayCompletion,
+                ])
             >
-                <div>
-                    <div class="text-sm font-semibold text-slate-100">{{ $assignment->routineItem->name }}</div>
-                    <div class="text-xs text-slate-400">
-                        {{ $assignment->todayCompletion ? 'Completed' : 'Pending' }}
-                    </div>
-                </div>
                 <div
-                    class="flex h-6 w-6 items-center justify-center rounded-full border"
                     @class([
-                        'border-emerald-400 bg-emerald-400/20 text-emerald-200' => $assignment->todayCompletion,
-                        'border-slate-700 text-slate-400' => ! $assignment->todayCompletion,
+                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
+                        'border-emerald-400 bg-emerald-400 text-white' => $assignment->todayCompletion,
+                        'border-slate-600' => ! $assignment->todayCompletion,
                     ])
                 >
-                    <span class="text-xs">{{ $assignment->todayCompletion ? '✓' : '' }}</span>
+                    @if ($assignment->todayCompletion)
+                        <svg class="h-4 w-4 animate-checkmark" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    @endif
                 </div>
+
+                <span
+                    @class([
+                        'text-base font-bold transition-colors',
+                        'text-slate-500 line-through' => $assignment->todayCompletion,
+                        'text-slate-100' => ! $assignment->todayCompletion,
+                    ])
+                >
+                    {{ $assignment->routineItem->name }}
+                </span>
             </button>
         @empty
-            <div class="rounded-2xl border border-dashed border-slate-800 px-4 py-6 text-center text-sm text-slate-400">
-                No routine items yet.
+            <div class="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-dash-border px-4 py-8 text-sm text-slate-400">
+                <flux:icon name="clipboard-document" variant="outline" class="size-5" />
+                <span>No routine items yet.</span>
             </div>
         @endforelse
     </div>
 
     @if ($this->isComplete)
-        <div class="mt-4 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-            All set for the day. Great work!
+        <div class="mt-5 flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 animate-celebration">
+            <flux:icon name="star" variant="solid" class="size-6 text-amber-400" />
+            <span class="text-base font-extrabold text-emerald-300">All done! Great job!</span>
+            <flux:icon name="star" variant="solid" class="size-6 text-amber-400" />
         </div>
     @endif
 </div>

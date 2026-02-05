@@ -1,16 +1,13 @@
 <div class="space-y-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Departures</h1>
-            <p class="text-sm text-slate-500">Define departure windows and applicable days.</p>
+        <div class="flex items-center gap-3">
+            <flux:icon name="clock" variant="outline" class="size-7 text-amber-500" />
+            <div>
+                <flux:heading size="xl" level="1">Departures</flux:heading>
+                <flux:text>Define departure windows and applicable days.</flux:text>
+            </div>
         </div>
-        <button
-            type="button"
-            wire:click="openCreate"
-            class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-        >
-            Add departure
-        </button>
+        <flux:button variant="primary" wire:click="openCreate">Add departure</flux:button>
     </div>
 
     <div class="space-y-3" wire:sort="reorder">
@@ -18,120 +15,75 @@
             <div
                 wire:key="departure-{{ $departure->id }}"
                 wire:sort:item="{{ $departure->id }}"
-                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3"
+                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white px-5 py-4 shadow-sm transition-all hover:border-amber-300/60 hover:shadow-md"
             >
                 <div>
-                    <div class="text-sm font-semibold text-slate-900">{{ $departure->name }}</div>
-                    <div class="text-xs text-slate-500">
-                        {{ \Illuminate\Support\Carbon::parse($departure->departure_time)->format('g:i A') }}
-                        · {{ $departure->is_active ? 'Active' : 'Paused' }}
+                    <div class="flex items-center gap-2">
+                        <div class="text-sm font-bold text-slate-900">{{ $departure->name }}</div>
+                        @if ($departure->is_active)
+                            <flux:badge size="sm" color="lime">Active</flux:badge>
+                        @else
+                            <flux:badge size="sm" color="zinc">Paused</flux:badge>
+                        @endif
                     </div>
-                    <div class="text-xs text-slate-400">
-                        Days: {{ $departure->applicable_days ? strtoupper(implode(', ', $departure->applicable_days)) : 'Daily' }}
+                    <div class="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                        <flux:icon name="clock" variant="outline" class="size-3.5" />
+                        {{ \Illuminate\Support\Carbon::parse($departure->departure_time)->format('g:i A') }}
+                    </div>
+                    <div class="mt-1.5 flex flex-wrap gap-1">
+                        @if ($departure->applicable_days)
+                            @foreach ($departure->applicable_days as $day)
+                                <flux:badge size="sm" color="zinc">{{ strtoupper($day) }}</flux:badge>
+                            @endforeach
+                        @else
+                            <flux:badge size="sm" color="sky">Daily</flux:badge>
+                        @endif
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button
-                        type="button"
-                        wire:click="openEdit({{ $departure->id }})"
-                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
-                    >
-                        Edit
-                    </button>
-                    <button
-                        type="button"
-                        wire:click="delete({{ $departure->id }})"
-                        class="rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600"
-                    >
-                        Delete
-                    </button>
+                    <flux:button size="xs" variant="subtle" wire:click="openEdit({{ $departure->id }})">Edit</flux:button>
+                    <flux:button size="xs" variant="danger" wire:click="delete({{ $departure->id }})">Delete</flux:button>
                 </div>
             </div>
         @empty
-            <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-500">
-                No departure times configured.
+            <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500">
+                <flux:icon name="clock" variant="outline" class="size-8 text-slate-300" />
+                <span>No departure times configured.</span>
             </div>
         @endforelse
     </div>
 
-    @if ($showModal)
-        <div class="fixed inset-0 z-40 bg-slate-900/40"></div>
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <form
-                wire:submit.prevent="save"
-                class="w-full max-w-xl rounded-3xl bg-white p-6 shadow-xl"
-            >
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        {{ $editingId ? 'Edit departure' : 'Add departure' }}
-                    </h2>
-                    <button type="button" class="text-sm text-slate-500" wire:click="$set('showModal', false)">
-                        Close
-                    </button>
-                </div>
+    <flux:modal wire:model.self="showModal" class="md:w-xl">
+        <form wire:submit.prevent="save" class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ $editingId ? 'Edit departure' : 'Add departure' }}</flux:heading>
+                <flux:text class="mt-2">{{ $editingId ? 'Update departure details.' : 'Add a new departure time.' }}</flux:text>
+            </div>
 
-                <div class="mt-6 space-y-4">
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Name</label>
-                        <input
-                            type="text"
-                            wire:model="name"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm"
-                        />
-                        @error('name')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Departure time</label>
-                        <input
-                            type="time"
-                            wire:model="departureTime"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm"
-                        />
-                        @error('departureTime')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Applicable days</label>
-                        <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
-                            @foreach ($dayOptions as $day)
-                                <label class="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
-                                    <input type="checkbox" value="{{ $day }}" wire:model="applicableDays" class="rounded" />
-                                    <span class="text-slate-600">{{ strtoupper($day) }}</span>
-                                </label>
-                            @endforeach
-                        </div>
-                        @error('applicableDays')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                        @error('applicableDays.*')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <label class="flex items-center gap-3 rounded-2xl border border-slate-200 px-3 py-2 text-sm">
-                        <input type="checkbox" wire:model="isActive" class="rounded" />
-                        <span class="text-slate-600">Active departure</span>
-                    </label>
-                </div>
+            <flux:input wire:model="name" label="Name" />
 
-                <div class="mt-6 flex justify-end gap-3">
-                    <button
-                        type="button"
-                        class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600"
-                        wire:click="$set('showModal', false)"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-                    >
-                        Save departure
-                    </button>
+            <flux:input type="time" wire:model="departureTime" label="Departure time" />
+
+            <flux:checkbox.group wire:model="applicableDays" label="Applicable days">
+                @foreach ($dayOptions as $day)
+                    <flux:checkbox label="{{ strtoupper($day) }}" value="{{ $day }}" />
+                @endforeach
+            </flux:checkbox.group>
+            <flux:error name="applicableDays" />
+            <flux:error name="applicableDays.*" />
+
+            <flux:field variant="inline">
+                <flux:label>Active departure</flux:label>
+                <flux:switch wire:model="isActive" />
+            </flux:field>
+
+            <div class="flex">
+                <flux:spacer />
+                <div class="flex gap-3">
+                    <flux:button wire:click="$set('showModal', false)">Cancel</flux:button>
+                    <flux:button type="submit" variant="primary">Save departure</flux:button>
                 </div>
-            </form>
-        </div>
-    @endif
+            </div>
+        </form>
+    </flux:modal>
 </div>

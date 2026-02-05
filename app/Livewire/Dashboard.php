@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.app')]
+#[Layout('layouts::app')]
 class Dashboard extends Component
 {
     /**

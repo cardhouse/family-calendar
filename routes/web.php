@@ -10,12 +10,12 @@ use App\Livewire\Admin\Weather as AdminWeather;
 use App\Livewire\Dashboard;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', Dashboard::class)->name('home');
+Route::livewire('/', Dashboard::class)->name('home');
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/children', AdminChildren::class)->name('children');
-    Route::get('/departures', AdminDepartures::class)->name('departures');
-    Route::get('/events', AdminEvents::class)->name('events');
-    Route::get('/routines', AdminRoutines::class)->name('routines');
-    Route::get('/weather', AdminWeather::class)->name('weather');
+    Route::livewire('/children', AdminChildren::class)->name('children');
+    Route::livewire('/departures', AdminDepartures::class)->name('departures');
+    Route::livewire('/events', AdminEvents::class)->name('events');
+    Route::livewire('/routines', AdminRoutines::class)->name('routines');
+    Route::livewire('/weather', AdminWeather::class)->name('weather');
 });

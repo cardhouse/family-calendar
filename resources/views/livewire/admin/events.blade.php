@@ -1,155 +1,85 @@
 <div class="space-y-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Events</h1>
-            <p class="text-sm text-slate-500">Manage calendar events and optional departures.</p>
+        <div class="flex items-center gap-3">
+            <flux:icon name="calendar" variant="outline" class="size-7 text-amber-500" />
+            <div>
+                <flux:heading size="xl" level="1">Events</flux:heading>
+                <flux:text>Manage calendar events and optional departures.</flux:text>
+            </div>
         </div>
-        <button
-            type="button"
-            wire:click="openCreate"
-            class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-        >
-            Add event
-        </button>
+        <flux:button variant="primary" wire:click="openCreate">Add event</flux:button>
     </div>
 
     <div class="space-y-3">
         @forelse ($events as $event)
             <div
                 wire:key="event-{{ $event->id }}"
-                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3"
+                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white px-5 py-4 shadow-sm transition-all hover:border-amber-300/60 hover:shadow-md"
+                style="border-left: 4px solid {{ $event->color }};"
             >
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="h-3 w-3 rounded-full" style="background-color: {{ $event->color }};"></span>
-                        <div class="text-sm font-semibold text-slate-900">{{ $event->name }}</div>
+                        <span class="h-4 w-4 rounded-full" style="background-color: {{ $event->color }};"></span>
+                        <div class="text-sm font-bold text-slate-900">{{ $event->name }}</div>
+                        <flux:badge size="sm" color="zinc">{{ ucfirst($event->category) }}</flux:badge>
                     </div>
-                    <div class="text-xs text-slate-500">
+                    <div class="mt-1 text-xs text-slate-500">
                         {{ $event->starts_at?->format('D M j, g:i A') }}
                         @if ($event->departure_time)
                             · Depart {{ \Illuminate\Support\Carbon::parse($event->departure_time)->format('g:i A') }}
                         @endif
                     </div>
-                    <div class="text-xs uppercase tracking-wide text-slate-400">{{ $event->category }}</div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button
-                        type="button"
-                        wire:click="openEdit({{ $event->id }})"
-                        class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
-                    >
-                        Edit
-                    </button>
-                    <button
-                        type="button"
-                        wire:click="delete({{ $event->id }})"
-                        class="rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600"
-                    >
-                        Delete
-                    </button>
+                    <flux:button size="xs" variant="subtle" wire:click="openEdit({{ $event->id }})">Edit</flux:button>
+                    <flux:button size="xs" variant="danger" wire:click="delete({{ $event->id }})">Delete</flux:button>
                 </div>
             </div>
         @empty
-            <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-500">
-                No events scheduled.
+            <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500">
+                <flux:icon name="calendar" variant="outline" class="size-8 text-slate-300" />
+                <span>No events scheduled.</span>
             </div>
         @endforelse
     </div>
 
-    @if ($showModal)
-        <div class="fixed inset-0 z-40 bg-slate-900/40"></div>
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <form
-                wire:submit.prevent="save"
-                class="w-full max-w-xl rounded-3xl bg-white p-6 shadow-xl"
-            >
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        {{ $editingId ? 'Edit event' : 'Add event' }}
-                    </h2>
-                    <button type="button" class="text-sm text-slate-500" wire:click="$set('showModal', false)">
-                        Close
-                    </button>
-                </div>
+    <flux:modal wire:model.self="showModal" class="md:w-xl">
+        <form wire:submit.prevent="save" class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ $editingId ? 'Edit event' : 'Add event' }}</flux:heading>
+                <flux:text class="mt-2">{{ $editingId ? 'Update event details.' : 'Add a new calendar event.' }}</flux:text>
+            </div>
 
-                <div class="mt-6 space-y-4">
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Name</label>
-                        <input
-                            type="text"
-                            wire:model="name"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm"
-                        />
-                        @error('name')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Start time</label>
-                        <input
-                            type="datetime-local"
-                            wire:model="startsAt"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm"
-                        />
-                        @error('startsAt')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Departure time (optional)</label>
-                        <input
-                            type="time"
-                            wire:model="departureTime"
-                            class="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm"
-                        />
-                        @error('departureTime')
-                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Category</label>
-                            <select
-                                wire:model="category"
-                                class="mt-2 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm"
-                            >
-                                @foreach ($categoryOptions as $option)
-                                    <option value="{{ $option }}">{{ ucfirst($option) }}</option>
-                                @endforeach
-                            </select>
-                            @error('category')
-                                <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Color</label>
-                            <div class="mt-2 flex items-center gap-3">
-                                <input type="color" wire:model="color" class="h-10 w-14 rounded-lg border" />
-                                <span class="text-xs text-slate-500">{{ $color }}</span>
-                            </div>
-                            @error('color')
-                                <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
+            <flux:input wire:model="name" label="Name" />
 
-                <div class="mt-6 flex justify-end gap-3">
-                    <button
-                        type="button"
-                        class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600"
-                        wire:click="$set('showModal', false)"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-                    >
-                        Save event
-                    </button>
+            <flux:input type="datetime-local" wire:model="startsAt" label="Start time" />
+
+            <flux:input type="time" wire:model="departureTime" label="Departure time (optional)" />
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <flux:select wire:model="category" label="Category">
+                    @foreach ($categoryOptions as $option)
+                        <flux:select.option value="{{ $option }}">{{ ucfirst($option) }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+
+                <div>
+                    <flux:label>Color</flux:label>
+                    <div class="mt-2 flex items-center gap-3">
+                        <input type="color" wire:model="color" class="h-10 w-14 rounded-lg border" />
+                        <flux:text>{{ $color }}</flux:text>
+                    </div>
+                    <flux:error name="color" />
                 </div>
-            </form>
-        </div>
-    @endif
+            </div>
+
+            <div class="flex">
+                <flux:spacer />
+                <div class="flex gap-3">
+                    <flux:button wire:click="$set('showModal', false)">Cancel</flux:button>
+                    <flux:button type="submit" variant="primary">Save event</flux:button>
+                </div>
+            </div>
+        </form>
+    </flux:modal>
 </div>

@@ -1,50 +1,47 @@
-<div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div class="flex items-center gap-4">
-            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 text-slate-200">
-                <span class="text-lg font-semibold">AM</span>
-            </div>
-            <div>
-                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Current time</p>
-                <p class="text-3xl font-semibold text-slate-100" x-data="DashboardTime.clock()" x-text="time"></p>
-            </div>
+<div class="grid gap-4 md:grid-cols-3">
+    {{-- Clock Panel --}}
+    <div class="flex items-center gap-4 rounded-2xl border border-dash-border bg-dash-card p-5">
+        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
+            <flux:icon name="clock" variant="outline" class="size-6" />
         </div>
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Right now</p>
+            <p class="text-3xl font-extrabold text-slate-100 md:text-4xl" x-data="DashboardTime.clock()" x-text="time"></p>
+        </div>
+    </div>
 
-        <div class="flex flex-col gap-2">
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Next departure</p>
-            @if ($nextDeparture)
-                <div class="text-2xl font-semibold text-slate-100">{{ $nextDeparture['label'] }}</div>
-                @if (count($nextDeparture['labels']) > 1)
-                    <div class="text-sm text-slate-400">
-                        {{ implode(' · ', $nextDeparture['labels']) }}
-                    </div>
-                @endif
-                <div
-                    x-data="DashboardTime.countdown({{ $nextDeparture['timestamp']->timestamp }})"
-                    :class="urgencyClass"
-                    class="text-2xl font-semibold"
-                    x-text="timeLeft"
-                ></div>
-            @else
-                <div class="text-lg text-slate-400">No departures scheduled.</div>
+    {{-- Departure Countdown Panel --}}
+    <div class="flex flex-col justify-center rounded-2xl border border-dash-border bg-dash-card p-5">
+        <p class="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Next departure</p>
+        @if ($nextDeparture)
+            <div class="mt-2 flex items-center gap-2">
+                <flux:icon name="truck" variant="outline" class="size-5 text-amber-400" />
+                <span class="text-lg font-extrabold text-slate-100">{{ $nextDeparture['label'] }}</span>
+            </div>
+            @if (count($nextDeparture['labels']) > 1)
+                <div class="mt-1 text-sm text-slate-400">
+                    {{ implode(' · ', $nextDeparture['labels']) }}
+                </div>
             @endif
-        </div>
+            <div
+                x-data="DashboardTime.countdown({{ $nextDeparture['timestamp']->timestamp }})"
+                :class="urgencyClass"
+                class="mt-2 text-4xl font-black md:text-5xl"
+                x-text="timeLeft"
+            ></div>
+        @else
+            <div class="mt-2 text-lg text-slate-400">No departures scheduled.</div>
+        @endif
+    </div>
 
-        <div class="flex flex-col gap-2">
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Weather</p>
-            <div class="rounded-full border border-slate-800 bg-slate-900/60 px-4 py-2 text-sm text-slate-300">
-                Weather coming soon
-            </div>
+    {{-- Weather Panel --}}
+    <div class="flex items-center gap-4 rounded-2xl border border-dash-border bg-dash-card p-5">
+        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-500/10 text-sky-400">
+            <flux:icon name="cloud" variant="outline" class="size-6" />
         </div>
-
-        <div class="flex flex-col gap-2">
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Admin</p>
-            <a
-                href="{{ route('admin.routines') }}"
-                class="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900/60 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-slate-500 hover:text-white"
-            >
-                Manage routines
-            </a>
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Weather</p>
+            <p class="mt-1 text-sm font-semibold text-slate-300">Coming soon</p>
         </div>
     </div>
 </div>
