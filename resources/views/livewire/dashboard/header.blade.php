@@ -36,5 +36,15 @@
                 Weather coming soon
             </div>
         </div>
+
+        <div class="flex flex-col gap-2">
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Admin</p>
+            <a
+                href="{{ route('admin.routines') }}"
+                class="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900/60 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-slate-500 hover:text-white"
+            >
+                Manage routines
+            </a>
+        </div>
     </div>
 </div>
