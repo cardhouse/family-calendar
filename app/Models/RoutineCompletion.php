@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\AdminTimezoneDateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,7 +30,7 @@ class RoutineCompletion extends Model
     {
         return [
             'completion_date' => 'date',
-            'completed_at' => 'datetime',
+            'completed_at' => AdminTimezoneDateTime::class,
         ];
     }
 

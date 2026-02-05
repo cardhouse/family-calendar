@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\AdminTimezoneDateTime;
+use App\Casts\AdminTimezoneTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,7 +33,8 @@ class CalendarEvent extends Model
     protected function casts(): array
     {
         return [
-            'starts_at' => 'datetime',
+            'starts_at' => AdminTimezoneDateTime::class,
+            'departure_time' => AdminTimezoneTime::class,
         ];
     }
 

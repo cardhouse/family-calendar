@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\AdminTimezoneTime;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,6 +36,7 @@ class DepartureTime extends Model
         return [
             'applicable_days' => 'array',
             'is_active' => 'boolean',
+            'departure_time' => AdminTimezoneTime::class,
         ];
     }
 
@@ -54,7 +56,7 @@ class DepartureTime extends Model
             return true;
         }
 
-        $today = strtolower(now()->format('D'));
+        $today = strtolower(now($this->timezone())->format('D'));
 
         return in_array($today, $days, true);
     }
@@ -71,8 +73,9 @@ class DepartureTime extends Model
             return null;
         }
 
-        $now = now();
-        $candidate = Carbon::parse($now->toDateString().' '.$time);
+        $timezone = $this->timezone();
+        $now = now($timezone);
+        $candidate = Carbon::parse($now->toDateString().' '.$time, $timezone);
 
         if ($this->isApplicableToday() && $candidate->greaterThan($now)) {
             return $candidate;
@@ -85,11 +88,18 @@ class DepartureTime extends Model
             $dayKey = strtolower($next->format('D'));
 
             if ($days === [] || in_array($dayKey, $days, true)) {
-                return Carbon::parse($next->toDateString().' '.$time);
+                return Carbon::parse($next->toDateString().' '.$time, $timezone);
             }
         }
 
         return null;
+    }
+
+    private function timezone(): string
+    {
+        $timezone = Setting::get('timezone', config('app.timezone'));
+
+        return is_string($timezone) && $timezone !== '' ? $timezone : config('app.timezone');
     }
 
     /**
