@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Setting;
 use App\Services\WeatherService;
+use Illuminate\Support\Carbon;
 use Livewire\Component;
 
 return new class extends Component
@@ -24,7 +25,7 @@ return new class extends Component
     public ?array $location = null;
 
     /**
-     * @var array{temperature: float, feels_like: float, precipitation: float|null, precipitation_unit: string, condition: string, weather_code: int, is_day: bool, units: string}|null
+     * @var array{temperature: float, feels_like: float, precipitation: float|null, precipitation_unit: string, condition: string, weather_code: int, is_day: bool, units: string, unit_symbol: string, fetched_at: string, location_label: string}|null
      */
     public ?array $weather = null;
 
@@ -55,7 +56,7 @@ return new class extends Component
     {
         if (! $this->enabled) {
             $this->weather = null;
-            $this->unavailableMessage = 'Weather widget is turned off.';
+            $this->unavailableMessage = 'Weather widget disabled in admin settings.';
 
             return;
         }
@@ -69,14 +70,10 @@ return new class extends Component
             return;
         }
 
-        $this->weather = app(WeatherService::class)->getCurrentWeather(
-            $location['latitude'],
-            $location['longitude'],
-            $this->units
-        );
+        $this->weather = app(WeatherService::class)->getCurrentWeatherForLocation($location, $this->units);
 
         if ($this->weather === null) {
-            $this->unavailableMessage = 'Weather is unavailable right now.';
+            $this->unavailableMessage = 'Unable to load weather right now. Showing this fallback until the next refresh.';
         }
     }
 
@@ -136,13 +133,30 @@ return new class extends Component
 
     public function locationLabel(): string
     {
+        if ($this->weather !== null && is_string($this->weather['location_label'] ?? null)) {
+            return $this->weather['location_label'];
+        }
+
         $location = $this->normalizeLocation($this->location);
 
         return $location['label'] ?? '';
     }
 
+    public function updatedAtText(): ?string
+    {
+        if (! is_string($this->weather['fetched_at'] ?? null)) {
+            return null;
+        }
+
+        return Carbon::parse($this->weather['fetched_at'])->diffForHumans();
+    }
+
     public function temperatureUnitLabel(): string
     {
+        if ($this->weather !== null && is_string($this->weather['unit_symbol'] ?? null)) {
+            return $this->weather['unit_symbol'];
+        }
+
         return $this->units === 'celsius' ? 'C' : 'F';
     }
 
@@ -286,13 +300,16 @@ return new class extends Component
                 @if ($showFeelsLike && $size !== 'compact')
                     <p class="mt-1 text-xs text-slate-400">Feels like {{ $this->feelsLikeText() }}</p>
                 @endif
+                @if ($size !== 'compact' && $this->locationLabel() !== '')
+                    <p class="mt-1 text-xs text-slate-400">{{ $this->locationLabel() }}</p>
+                @endif
+                @if ($size !== 'compact' && $this->updatedAtText() !== null)
+                    <p class="mt-1 text-xs text-slate-500">Updated {{ $this->updatedAtText() }}</p>
+                @endif
                 @if ($showPrecipitationAlerts && $weather['precipitation'] !== null && $weather['precipitation'] > 0)
                     <p class="mt-1 text-xs font-semibold text-sky-300">
                         Precipitation {{ rtrim(rtrim(number_format($weather['precipitation'], 2), '0'), '.') }} {{ $weather['precipitation_unit'] }}
                     </p>
-                @endif
-                @if ($size === 'large' && $this->locationLabel() !== '')
-                    <p class="mt-2 text-xs text-slate-400">{{ $this->locationLabel() }}</p>
                 @endif
             @else
                 <p class="mt-1 text-sm text-slate-400">{{ $unavailableMessage }}</p>

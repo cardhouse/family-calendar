@@ -41,9 +41,9 @@ it('renders the weather widget in the header by default', function () {
         ->assertSee('Set a location in admin weather settings.');
 });
 
-it('hides the weather widget when disabled in settings', function () {
+it('shows a disabled weather panel when weather is turned off in settings', function () {
     Setting::set('weather.enabled', false);
 
     Livewire::test('dashboard.header')
-        ->assertDontSee('Set a location in admin weather settings.');
+        ->assertSee('Weather widget disabled in admin settings.');
 });

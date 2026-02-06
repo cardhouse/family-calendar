@@ -369,7 +369,7 @@ return new class extends Component
                     <div
                         wire:key="routine-item-{{ $routineItem->id }}"
                         wire:sort:item="{{ $routineItem->id }}"
-                        class="rounded-xl border border-slate-200/80 bg-white px-3 py-2.5 shadow-sm"
+                        class="rounded-xl border border-slate-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-3 py-2.5 shadow-sm"
                     >
                         <div class="flex items-center justify-between gap-3">
                             <div class="flex items-center gap-2">
@@ -382,7 +382,7 @@ return new class extends Component
                                     <flux:icon name="bars-3" variant="outline" class="size-4" />
                                 </button>
                                 <div>
-                                    <div class="text-sm font-bold text-slate-900">{{ $routineItem->name }}</div>
+                                    <div class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ $routineItem->name }}</div>
                                     <span
                                         class="mt-1 inline-flex cursor-grab items-center gap-1 rounded-full border border-dashed border-amber-300/80 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-600"
                                         draggable="true"
@@ -400,7 +400,7 @@ return new class extends Component
                         </div>
                     </div>
                 @empty
-                    <div class="flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+                    <div class="flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
                         <flux:icon name="clipboard-document" variant="outline" class="size-6 text-slate-300" />
                         <span>Add your first routine to start building assignments.</span>
                     </div>
@@ -430,7 +430,7 @@ return new class extends Component
 
             @if ($activeTab === 'events')
                 @if ($events->isEmpty())
-                    <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500">
+                    <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
                         <flux:icon name="calendar" variant="outline" class="size-6 text-slate-300" />
                         <span>Add an event to start assigning routines for special days.</span>
                     </div>
@@ -447,7 +447,7 @@ return new class extends Component
                 @endif
             @elseif ($activeTab === 'departures')
                 @if ($departures->isEmpty())
-                    <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500">
+                    <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
                         <flux:icon name="clock" variant="outline" class="size-6 text-slate-300" />
                         <span>Add a departure time to start assigning routines for departures.</span>
                     </div>
@@ -465,7 +465,7 @@ return new class extends Component
             @endif
 
             @if ($children->isEmpty())
-                <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500">
+                <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
                     <flux:icon name="face-smile" variant="outline" class="size-6 text-slate-300" />
                     <span>Add children before assigning routines.</span>
                 </div>
@@ -476,7 +476,7 @@ return new class extends Component
                     @foreach ($children as $child)
                         <div
                             wire:key="routine-bucket-{{ $child->id }}"
-                            class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
+                            class="overflow-hidden rounded-2xl border border-slate-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 shadow-sm"
                         >
                             <div
                                 class="flex items-center justify-between gap-2 px-4 py-3"
@@ -489,7 +489,7 @@ return new class extends Component
                                     >
                                         {{ strtoupper(mb_substr($child->name, 0, 1)) }}
                                     </div>
-                                    <div class="text-sm font-bold text-slate-900">{{ $child->name }}</div>
+                                    <div class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ $child->name }}</div>
                                 </div>
                                 <flux:badge size="sm" color="zinc">
                                     {{ count($assignmentBuckets[$child->id] ?? []) }} items
@@ -500,7 +500,7 @@ return new class extends Component
                                 @dragover.prevent="isOver = true"
                                 @dragleave.prevent="isOver = false"
                                 @drop.prevent="isOver = false; const routineId = $event.dataTransfer.getData('routine-item'); if (routineId) { $wire.assignRoutine(parseInt(routineId, 10), {{ $child->id }}); }"
-                                :class="isOver ? 'border-amber-400 bg-amber-50/50' : 'border-slate-200'"
+                                :class="isOver ? 'border-amber-400 bg-amber-50/50' : 'border-slate-200 dark:border-zinc-700'"
                                 class="mx-3 mb-3 min-h-[120px] rounded-xl border border-dashed px-3 py-3 transition-colors"
                             >
                                 <div class="space-y-2" wire:sort="reorderAssignment">
@@ -508,7 +508,7 @@ return new class extends Component
                                         <div
                                             wire:key="assignment-{{ $assignment->id }}"
                                             wire:sort:item="{{ $assignment->id }}"
-                                            class="flex items-center justify-between gap-2 rounded-lg border border-slate-200/80 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm"
+                                            class="flex items-center justify-between gap-2 rounded-lg border border-slate-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-3 py-2 text-sm font-semibold text-slate-800 dark:text-slate-100 shadow-sm"
                                         >
                                             <span>{{ $assignment->routineItem->name }}</span>
                                             <button

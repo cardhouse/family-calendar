@@ -309,7 +309,7 @@ return new class extends Component
         </flux:callout.text>
     </flux:callout>
 
-    <div class="rounded-2xl border border-slate-200/80 bg-white px-6 py-5 shadow-sm">
+    <div class="rounded-2xl border border-slate-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-6 py-5 shadow-sm">
         <form wire:submit.prevent="save" class="space-y-6">
             <div class="space-y-3">
                 <flux:input
@@ -321,16 +321,16 @@ return new class extends Component
                 <flux:error name="locationQuery" />
 
                 @if ($searchResults !== [])
-                    <div class="max-h-60 overflow-y-auto rounded-xl border border-slate-200">
+                    <div class="max-h-60 overflow-y-auto rounded-xl border border-slate-200 dark:border-zinc-700">
                         @foreach ($searchResults as $index => $result)
                             <button
                                 type="button"
                                 wire:key="weather-location-{{ $index }}"
                                 wire:click="selectLocation({{ $index }})"
-                                class="flex w-full items-center justify-between px-3 py-2 text-left transition hover:bg-slate-50"
+                                class="flex w-full items-center justify-between px-3 py-2 text-left transition hover:bg-slate-50 dark:hover:bg-zinc-800"
                             >
-                                <span class="font-semibold text-slate-800">{{ $result['name'] }}</span>
-                                <span class="text-xs text-slate-500">{{ $result['admin1'] ?? $result['country'] ?? 'Unknown region' }}</span>
+                                <span class="font-semibold text-slate-800 dark:text-slate-100">{{ $result['name'] }}</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">{{ $result['admin1'] ?? $result['country'] ?? 'Unknown region' }}</span>
                             </button>
                         @endforeach
                     </div>
@@ -358,7 +358,7 @@ return new class extends Component
                 </flux:select>
             </div>
 
-            <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+            <div class="space-y-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50/60 dark:bg-zinc-900/50 p-4">
                 <flux:field variant="inline">
                     <flux:label>Show weather widget</flux:label>
                     <flux:switch wire:model="enabled" />
@@ -383,4 +383,27 @@ return new class extends Component
             </div>
         </form>
     </div>
+
+    <section class="space-y-3 rounded-2xl border border-slate-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-6 py-5 shadow-sm">
+        <div>
+            <flux:heading size="lg">Preview</flux:heading>
+            <flux:text class="mt-1">This reflects your current weather settings selection.</flux:text>
+        </div>
+
+        @if ($enabled)
+            <livewire:weather-widget
+                :size="$widgetSize"
+                :units="$units"
+                :show-feels-like="$showFeelsLike"
+                :show-precipitation-alerts="$showPrecipitationAlerts"
+                :location="$selectedLocation"
+                :enabled="$enabled"
+                wire:key="weather-preview-{{ $widgetSize }}-{{ $units }}-{{ (int) $showFeelsLike }}-{{ (int) $showPrecipitationAlerts }}-{{ (int) $enabled }}"
+            />
+        @else
+            <div class="rounded-xl border border-dashed border-slate-300 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900/50 px-4 py-4 text-sm text-slate-500 dark:text-slate-400">
+                Widget is disabled. Enable it to show weather on the dashboard.
+            </div>
+        @endif
+    </section>
 </div>

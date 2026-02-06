@@ -142,16 +142,16 @@ return new class extends Component
         @forelse ($events as $event)
             <div
                 wire:key="event-{{ $event->id }}"
-                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white px-5 py-4 shadow-sm transition-all hover:border-amber-300/60 hover:shadow-md"
+                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-5 py-4 shadow-sm transition-all hover:border-amber-300/60 hover:shadow-md"
                 style="border-left: 4px solid {{ $event->color }};"
             >
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="h-4 w-4 rounded-full" style="background-color: {{ $event->color }};"></span>
-                        <div class="text-sm font-bold text-slate-900">{{ $event->name }}</div>
+                        <div class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ $event->name }}</div>
                         <flux:badge size="sm" color="zinc">{{ ucfirst($event->category) }}</flux:badge>
                     </div>
-                    <div class="mt-1 text-xs text-slate-500">
+                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         {{ $event->starts_at?->format('D M j, g:i A') }}
                         @if ($event->departure_time)
                             · Depart {{ \Illuminate\Support\Carbon::parse($event->departure_time)->format('g:i A') }}
@@ -164,7 +164,7 @@ return new class extends Component
                 </div>
             </div>
         @empty
-            <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500">
+            <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
                 <flux:icon name="calendar" variant="outline" class="size-8 text-slate-300" />
                 <span>No events scheduled.</span>
             </div>

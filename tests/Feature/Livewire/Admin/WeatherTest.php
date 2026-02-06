@@ -7,6 +7,23 @@ use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
 it('persists weather settings from the admin weather screen', function () {
+    Http::fake([
+        'https://api.open-meteo.com/v1/forecast*' => Http::response([
+            'current_units' => [
+                'temperature_2m' => 'C',
+                'apparent_temperature' => 'C',
+                'precipitation' => 'mm',
+            ],
+            'current' => [
+                'temperature_2m' => 18.3,
+                'apparent_temperature' => 17.6,
+                'weather_code' => 2,
+                'is_day' => 1,
+                'precipitation' => 0.0,
+            ],
+        ], 200),
+    ]);
+
     Livewire::test('admin.weather')
         ->set('enabled', true)
         ->set('units', 'celsius')
@@ -73,4 +90,11 @@ it('requires selecting a location when weather is enabled', function () {
         ->set('selectedLocation', null)
         ->call('save')
         ->assertHasErrors(['locationQuery']);
+});
+
+it('shows a preview fallback when the widget is disabled', function () {
+    Livewire::test('admin.weather')
+        ->set('enabled', false)
+        ->assertSee('Preview')
+        ->assertSee('Widget is disabled. Enable it to show weather on the dashboard.');
 });

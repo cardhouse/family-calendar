@@ -82,7 +82,7 @@ class WeatherService
     }
 
     /**
-     * @return array{temperature: float, feels_like: float, precipitation: float|null, precipitation_unit: string, condition: string, weather_code: int, is_day: bool, units: string}|null
+     * @return array{temperature: float, feels_like: float, precipitation: float|null, precipitation_unit: string, condition: string, weather_code: int, is_day: bool, units: string, unit_symbol: string, fetched_at: string}|null
      */
     public function getCurrentWeather(float $latitude, float $longitude, string $units = 'fahrenheit'): ?array
     {
@@ -141,6 +141,34 @@ class WeatherService
     }
 
     /**
+     * @param  array{name: string, admin1: string|null, country: string|null, latitude: float|int|string, longitude: float|int|string, timezone: string|null, label: string|null}  $location
+     * @return array{temperature: float, feels_like: float, precipitation: float|null, precipitation_unit: string, condition: string, weather_code: int, is_day: bool, units: string, unit_symbol: string, fetched_at: string, location_label: string}|null
+     */
+    public function getCurrentWeatherForLocation(array $location, string $units = 'fahrenheit'): ?array
+    {
+        $normalizedLocation = $this->normalizeLocationPayload($location);
+
+        if ($normalizedLocation === null) {
+            return null;
+        }
+
+        $weather = $this->getCurrentWeather(
+            $normalizedLocation['latitude'],
+            $normalizedLocation['longitude'],
+            $units
+        );
+
+        if ($weather === null) {
+            return null;
+        }
+
+        return [
+            ...$weather,
+            'location_label' => $normalizedLocation['label'],
+        ];
+    }
+
+    /**
      * @param  array<string, mixed>  $result
      * @return array{name: string, admin1: string|null, country: string|null, latitude: float, longitude: float, timezone: string|null, label: string}|null
      */
@@ -182,7 +210,7 @@ class WeatherService
     /**
      * @param  array<string, mixed>  $current
      * @param  array<string, mixed>  $currentUnits
-     * @return array{temperature: float, feels_like: float, precipitation: float|null, precipitation_unit: string, condition: string, weather_code: int, is_day: bool, units: string}|null
+     * @return array{temperature: float, feels_like: float, precipitation: float|null, precipitation_unit: string, condition: string, weather_code: int, is_day: bool, units: string, unit_symbol: string, fetched_at: string}|null
      */
     private function formatCurrentWeather(array $current, array $currentUnits, string $units): ?array
     {
@@ -219,6 +247,8 @@ class WeatherService
             'weather_code' => $code,
             'is_day' => (int) $isDay === 1,
             'units' => $units,
+            'unit_symbol' => $units === 'celsius' ? 'C' : 'F',
+            'fetched_at' => now()->toIso8601String(),
         ];
     }
 
@@ -257,6 +287,43 @@ class WeatherService
         }));
 
         return implode(', ', array_unique($parts));
+    }
+
+    /**
+     * @param  array{name: string, admin1: string|null, country: string|null, latitude: float|int|string, longitude: float|int|string, timezone: string|null, label: string|null}  $location
+     * @return array{name: string, admin1: string|null, country: string|null, latitude: float, longitude: float, timezone: string|null, label: string}|null
+     */
+    private function normalizeLocationPayload(array $location): ?array
+    {
+        $name = $this->cleanString($location['name'] ?? null);
+        $admin1 = $this->cleanString($location['admin1'] ?? null);
+        $country = $this->cleanString($location['country'] ?? null);
+        $timezone = $this->cleanString($location['timezone'] ?? null);
+        $label = $this->cleanString($location['label'] ?? null);
+        $latitude = $location['latitude'] ?? null;
+        $longitude = $location['longitude'] ?? null;
+
+        if (
+            $name === null
+            || ! is_numeric($latitude)
+            || ! is_numeric($longitude)
+        ) {
+            return null;
+        }
+
+        if ($label === null) {
+            $label = $this->locationLabel($name, $admin1, $country);
+        }
+
+        return [
+            'name' => $name,
+            'admin1' => $admin1,
+            'country' => $country,
+            'latitude' => round((float) $latitude, 4),
+            'longitude' => round((float) $longitude, 4),
+            'timezone' => $timezone,
+            'label' => $label,
+        ];
     }
 
     private function weatherCodeLabel(int $weatherCode): string

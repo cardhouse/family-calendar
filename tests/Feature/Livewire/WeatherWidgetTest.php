@@ -83,7 +83,9 @@ it('renders medium and large variants with matching details', function () {
         ->assertSee('data-size="medium"', false)
         ->assertSee('18 C')
         ->assertSee('Feels like 18 C')
-        ->assertSee('Precipitation 1.6 mm');
+        ->assertSee('Precipitation 1.6 mm')
+        ->assertSee('Boulder, Colorado, United States')
+        ->assertSee('Updated');
 
     Livewire::test('weather-widget', [
         'size' => 'large',
@@ -111,4 +113,40 @@ it('renders a fallback state when no location is configured', function () {
         'location' => null,
     ])
         ->assertSee('Set a location in admin weather settings.');
+});
+
+it('renders a fallback state when forecast requests fail', function () {
+    Http::fake([
+        'https://api.open-meteo.com/v1/forecast*' => Http::response([], 500),
+    ]);
+
+    Livewire::test('weather-widget', [
+        'enabled' => true,
+        'location' => [
+            'name' => 'Denver',
+            'admin1' => 'Colorado',
+            'country' => 'United States',
+            'latitude' => 39.7392,
+            'longitude' => -104.9903,
+            'timezone' => 'America/Denver',
+            'label' => 'Denver, Colorado, United States',
+        ],
+    ])
+        ->assertSee('Unable to load weather right now. Showing this fallback until the next refresh.');
+});
+
+it('shows a disabled message when the weather widget is disabled', function () {
+    Livewire::test('weather-widget', [
+        'enabled' => false,
+        'location' => [
+            'name' => 'Denver',
+            'admin1' => 'Colorado',
+            'country' => 'United States',
+            'latitude' => 39.7392,
+            'longitude' => -104.9903,
+            'timezone' => 'America/Denver',
+            'label' => 'Denver, Colorado, United States',
+        ],
+    ])
+        ->assertSee('Weather widget disabled in admin settings.');
 });

@@ -91,8 +91,10 @@ it('returns current weather and reuses cached responses', function () {
             'weather_code' => 0,
             'is_day' => true,
             'units' => 'fahrenheit',
+            'unit_symbol' => 'F',
         ])
-        ->and($cached)->toBe($weather);
+        ->and($cached)->toBe($weather)
+        ->and($weather)->toHaveKey('fetched_at');
 
     Http::assertSentCount(1);
     Http::assertSent(function (Request $request): bool {
@@ -131,7 +133,51 @@ it('uses stale cache when current weather refresh fails', function () {
 
     $fallback = $service->getCurrentWeather(39.7392, -104.9903, 'fahrenheit');
 
-    expect($fallback)->toBe($first);
+    expect($fallback)->not->toBeNull()
+        ->and($fallback)->toMatchArray([
+            'temperature' => $first['temperature'],
+            'feels_like' => $first['feels_like'],
+            'condition' => $first['condition'],
+            'weather_code' => $first['weather_code'],
+            'units' => $first['units'],
+            'unit_symbol' => $first['unit_symbol'],
+        ]);
 
     Carbon::setTestNow();
+});
+
+it('returns weather data when resolving from a location payload', function () {
+    Http::fake([
+        'https://api.open-meteo.com/v1/forecast*' => Http::response([
+            'current_units' => [
+                'temperature_2m' => 'F',
+                'apparent_temperature' => 'F',
+                'precipitation' => 'in',
+            ],
+            'current' => [
+                'temperature_2m' => 69.3,
+                'apparent_temperature' => 67.7,
+                'weather_code' => 1,
+                'is_day' => 1,
+                'precipitation' => 0.0,
+            ],
+        ], 200),
+    ]);
+
+    $weather = app(WeatherService::class)->getCurrentWeatherForLocation([
+        'name' => 'Austin',
+        'admin1' => 'Texas',
+        'country' => 'United States',
+        'latitude' => '30.2672',
+        'longitude' => '-97.7431',
+        'timezone' => 'America/Chicago',
+        'label' => null,
+    ], 'fahrenheit');
+
+    expect($weather)->not->toBeNull()
+        ->and($weather)->toMatchArray([
+            'condition' => 'Mainly clear',
+            'location_label' => 'Austin, Texas, United States',
+            'unit_symbol' => 'F',
+        ]);
 });

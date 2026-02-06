@@ -162,12 +162,8 @@ return new class extends Component
 };
 ?>
 
-@php
-    $headerColumns = $showWeatherWidget ? 'md:grid-cols-3' : 'md:grid-cols-2';
-@endphp
-
 <div class="space-y-4">
-    <div class="grid gap-4 {{ $headerColumns }}">
+    <div class="grid gap-4 md:grid-cols-3">
         {{-- Clock Panel --}}
         <div class="flex items-center gap-4 rounded-2xl border border-dash-border bg-dash-card p-5">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
@@ -213,6 +209,11 @@ return new class extends Component
                 :enabled="$showWeatherWidget"
                 wire:key="weather-widget-header"
             />
+        @else
+            <div class="rounded-2xl border border-dash-border bg-dash-card p-5">
+                <p class="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Weather</p>
+                <p class="mt-2 text-sm text-slate-400">Weather widget disabled in admin settings.</p>
+            </div>
         @endif
     </div>
 

@@ -98,7 +98,7 @@ return new class extends Component
         </flux:callout.text>
     </flux:callout>
 
-    <div class="rounded-2xl border border-slate-200/80 bg-white px-6 py-5 shadow-sm">
+    <div class="rounded-2xl border border-slate-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-900/70 px-6 py-5 shadow-sm">
         <form wire:submit.prevent="save" class="space-y-4">
             <flux:select
                 wire:model="timezone"
