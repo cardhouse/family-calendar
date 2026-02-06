@@ -52,7 +52,7 @@ class CalendarEvent extends Model
      */
     public function scopeUpcoming(Builder $query): Builder
     {
-        return $query->where('starts_at', '>', now())->orderBy('starts_at');
+        return $query->where('starts_at', '>', now('UTC'))->orderBy('starts_at');
     }
 
     /**

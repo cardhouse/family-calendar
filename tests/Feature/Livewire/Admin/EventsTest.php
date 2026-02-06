@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\CalendarEvent;
+use App\Models\Setting;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
 it('creates an event', function () {
@@ -54,4 +56,28 @@ it('deletes an event', function () {
         ->call('delete', $event->id);
 
     expect(CalendarEvent::query()->whereKey($event->id)->exists())->toBeFalse();
+});
+
+it('stores event start times in utc based on the admin timezone', function () {
+    Setting::set('timezone', 'America/Chicago');
+
+    $local = Carbon::create(2026, 2, 5, 7, 30, 0, 'America/Chicago');
+    $startsAt = $local->format('Y-m-d\TH:i');
+
+    Livewire::test('admin.events')
+        ->call('openCreate')
+        ->set('name', 'Field Trip')
+        ->set('startsAt', $startsAt)
+        ->set('departureTime', '07:15')
+        ->set('category', 'school')
+        ->set('color', '#0f172a')
+        ->call('save');
+
+    $event = CalendarEvent::query()->where('name', 'Field Trip')->first();
+
+    expect($event)->not->toBeNull()
+        ->and($event?->starts_at?->format('Y-m-d H:i:s'))->toBe($local->format('Y-m-d H:i:s'))
+        ->and($event?->getRawOriginal('starts_at'))->toBe(
+            $local->copy()->setTimezone('UTC')->format('Y-m-d H:i:s')
+        );
 });

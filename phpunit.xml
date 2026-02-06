@@ -31,5 +31,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="SCHOOL_LUNCH_SOURCE_URL" value=""/>
+        <env name="SCHOOL_LUNCH_MENU_ID" value=""/>
+        <env name="SCHOOL_LUNCH_SITE_CODE" value=""/>
     </php>
 </phpunit>

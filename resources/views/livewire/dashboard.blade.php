@@ -3,6 +3,7 @@
 use App\Models\CalendarEvent;
 use App\Models\Child;
 use App\Services\NextDepartureService;
+use App\Services\SchoolLunchService;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -25,11 +26,17 @@ return new class extends Component
      */
     public ?array $nextDeparture = null;
 
+    /**
+     * @var array{date: string, date_label: string, menu_name: string, items: array<int, string>}|null
+     */
+    public ?array $schoolLunch = null;
+
     public function mount(): void
     {
         $this->children = $this->loadChildren();
         $this->upcomingEvents = $this->loadUpcomingEvents();
         $this->nextDeparture = app(NextDepartureService::class)->determine();
+        $this->schoolLunch = app(SchoolLunchService::class)->forDate(now($this->adminTimezone()));
     }
 
     /**
@@ -58,16 +65,23 @@ return new class extends Component
             ->limit(3)
             ->get();
     }
+
+    private function adminTimezone(): string
+    {
+        $timezone = \App\Models\Setting::get('timezone', config('app.timezone'));
+
+        return is_string($timezone) && $timezone !== '' ? $timezone : config('app.timezone');
+    }
 };
 ?>
 
 <div class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <div class="fixed right-4 top-4 z-50 opacity-50 transition-opacity hover:opacity-100">
-            <flux:button variant="ghost" icon="cog-6-tooth" href="{{ route('admin.routines') }}" aria-label="Open admin settings" />
+            <flux:button variant="ghost" icon="cog-6-tooth" href="{{ route('admin.settings') }}" aria-label="Open admin settings" />
         </div>
 
-        <livewire:dashboard.header :next-departure="$nextDeparture" />
+        <livewire:dashboard.header :next-departure="$nextDeparture" :school-lunch="$schoolLunch" />
 
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>

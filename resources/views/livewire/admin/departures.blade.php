@@ -80,7 +80,9 @@ return new class extends Component
         ];
 
         if ($this->editingId !== null) {
-            DepartureTime::query()->whereKey($this->editingId)->update($payload);
+            $departure = DepartureTime::query()->findOrFail($this->editingId);
+
+            $departure->update($payload);
         } else {
             $order = (int) DepartureTime::query()->max('display_order');
 

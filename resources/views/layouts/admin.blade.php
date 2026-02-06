@@ -32,6 +32,7 @@
             </flux:sidebar.nav>
 
             <flux:sidebar.nav>
+                <flux:sidebar.item icon="cog-6-tooth" href="{{ route('admin.settings') }}" :current="request()->routeIs('admin.settings')">Settings</flux:sidebar.item>
                 <flux:sidebar.item icon="face-smile" href="{{ route('admin.children') }}" :current="request()->routeIs('admin.children')">Children</flux:sidebar.item>
                 <flux:sidebar.item icon="clock" href="{{ route('admin.departures') }}" :current="request()->routeIs('admin.departures')">Departures</flux:sidebar.item>
                 <flux:sidebar.item icon="calendar" href="{{ route('admin.events') }}" :current="request()->routeIs('admin.events')">Events</flux:sidebar.item>

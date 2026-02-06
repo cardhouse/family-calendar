@@ -111,9 +111,28 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        Setting::query()->create([
-            'key' => 'weather.units',
-            'value' => 'fahrenheit',
-        ]);
+        $weatherSettings = [
+            'weather.enabled' => true,
+            'weather.units' => 'fahrenheit',
+            'weather.widget_size' => 'medium',
+            'weather.show_feels_like' => true,
+            'weather.precipitation_alerts' => true,
+            'weather.location' => [
+                'name' => 'Denver',
+                'admin1' => 'Colorado',
+                'country' => 'United States',
+                'latitude' => 39.7392,
+                'longitude' => -104.9903,
+                'timezone' => 'America/Denver',
+                'label' => 'Denver, Colorado, United States',
+            ],
+        ];
+
+        foreach ($weatherSettings as $key => $value) {
+            Setting::query()->updateOrCreate(
+                ['key' => $key],
+                ['value' => $value]
+            );
+        }
     }
 }

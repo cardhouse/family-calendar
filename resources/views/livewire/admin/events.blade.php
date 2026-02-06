@@ -77,7 +77,7 @@ return new class extends Component
 
         $payload = [
             'name' => $validated['name'],
-            'starts_at' => Carbon::parse($validated['startsAt'])->toDateTimeString(),
+            'starts_at' => $validated['startsAt'],
             'departure_time' => $validated['departureTime'] !== ''
                 ? $this->normalizeTime($validated['departureTime'])
                 : null,
@@ -86,7 +86,9 @@ return new class extends Component
         ];
 
         if ($this->editingId !== null) {
-            CalendarEvent::query()->whereKey($this->editingId)->update($payload);
+            $event = CalendarEvent::query()->findOrFail($this->editingId);
+
+            $event->update($payload);
         } else {
             CalendarEvent::query()->create($payload);
         }

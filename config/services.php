@@ -37,4 +37,16 @@ return [
         ],
     ],
 
+    'school_lunch' => [
+        'source_url' => env('SCHOOL_LUNCH_SOURCE_URL'),
+        'menu_id' => env('SCHOOL_LUNCH_MENU_ID'),
+        'site_code' => env('SCHOOL_LUNCH_SITE_CODE'),
+        'cache_ttl_minutes' => (int) env('SCHOOL_LUNCH_CACHE_TTL_MINUTES', 30),
+        'request_timeout' => (float) env('SCHOOL_LUNCH_REQUEST_TIMEOUT', 10),
+    ],
+
+    'weather' => [
+        'request_timeout' => (float) env('WEATHER_REQUEST_TIMEOUT', 8),
+    ],
+
 ];
