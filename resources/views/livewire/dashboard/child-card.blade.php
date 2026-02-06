@@ -11,11 +11,18 @@ return new class extends Component
 {
     public Child $child;
 
+    /**
+     * @var list<int>
+     */
+    public array $activeAssignmentIds = [];
+
     public bool $showCompleted = true;
 
-    public function mount(Child $child): void
+    public function mount(Child $child, array $activeAssignmentIds = []): void
     {
         $this->child = $child;
+        $this->activeAssignmentIds = $this->normalizeAssignmentIds($activeAssignmentIds);
+        $this->reloadAssignments();
     }
 
     public function hydrate(): void
@@ -31,7 +38,7 @@ return new class extends Component
 
     public function toggleCompletion(int $assignmentId): void
     {
-        $assignment = $this->child->dailyRoutineAssignments->firstWhere('id', $assignmentId);
+        $assignment = $this->child->routineAssignments->firstWhere('id', $assignmentId);
 
         if ($assignment === null) {
             return;
@@ -56,8 +63,19 @@ return new class extends Component
 
     private function reloadAssignments(): void
     {
+        $activeAssignmentIds = $this->activeAssignmentIds;
+
         $this->child->load([
-            'dailyRoutineAssignments' => fn ($query) => $query
+            'routineAssignments' => fn ($query) => $query
+                ->where(function ($assignmentQuery) use ($activeAssignmentIds): void {
+                    $assignmentQuery
+                        ->whereNull('assignable_type')
+                        ->whereNull('assignable_id');
+
+                    if ($activeAssignmentIds !== []) {
+                        $assignmentQuery->orWhereIn('routine_assignments.id', $activeAssignmentIds);
+                    }
+                })
                 ->ordered()
                 ->with(['routineItem', 'todayCompletion']),
         ]);
@@ -69,7 +87,7 @@ return new class extends Component
     #[Computed]
     public function assignments(): Collection
     {
-        return $this->child->dailyRoutineAssignments;
+        return $this->child->routineAssignments;
     }
 
     /**
@@ -108,6 +126,31 @@ return new class extends Component
     {
         return $this->assignments->isNotEmpty()
             && $this->assignments->every(fn ($assignment) => $assignment->todayCompletion !== null);
+    }
+
+    /**
+     * @param  array<int, int|string>  $assignmentIds
+     * @return list<int>
+     */
+    private function normalizeAssignmentIds(array $assignmentIds): array
+    {
+        $normalizedAssignmentIds = [];
+
+        foreach ($assignmentIds as $assignmentId) {
+            if (! is_numeric($assignmentId)) {
+                continue;
+            }
+
+            $normalized = (int) $assignmentId;
+
+            if ($normalized <= 0) {
+                continue;
+            }
+
+            $normalizedAssignmentIds[$normalized] = true;
+        }
+
+        return array_map('intval', array_keys($normalizedAssignmentIds));
     }
 };
 ?>

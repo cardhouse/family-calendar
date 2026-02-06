@@ -2,6 +2,7 @@
 
 use App\Models\CalendarEvent;
 use App\Models\Child;
+use App\Models\RoutineAssignment;
 use App\Services\NextDepartureService;
 use App\Services\SchoolLunchService;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,15 +28,21 @@ return new class extends Component
     public ?array $nextDeparture = null;
 
     /**
+     * @var array<int, list<int>>
+     */
+    public array $activeAssignmentIdsByChild = [];
+
+    /**
      * @var array{date: string, date_label: string, menu_name: string, items: array<int, string>}|null
      */
     public ?array $schoolLunch = null;
 
     public function mount(): void
     {
+        $this->nextDeparture = app(NextDepartureService::class)->determine();
+        $this->activeAssignmentIdsByChild = $this->mapActiveAssignmentIdsByChild($this->nextDeparture);
         $this->children = $this->loadChildren();
         $this->upcomingEvents = $this->loadUpcomingEvents();
-        $this->nextDeparture = app(NextDepartureService::class)->determine();
         $this->schoolLunch = app(SchoolLunchService::class)->forDate(now($this->adminTimezone()));
     }
 
@@ -44,11 +51,23 @@ return new class extends Component
      */
     private function loadChildren(): Collection
     {
+        $activeAssignmentIds = $this->activeAssignmentIds();
+
         return Child::query()
             ->ordered()
             ->with([
-                'dailyRoutineAssignments' => function ($query) {
-                    $query->ordered()
+                'routineAssignments' => function ($query) use ($activeAssignmentIds) {
+                    $query
+                        ->where(function ($assignmentQuery) use ($activeAssignmentIds): void {
+                            $assignmentQuery
+                                ->whereNull('assignable_type')
+                                ->whereNull('assignable_id');
+
+                            if ($activeAssignmentIds !== []) {
+                                $assignmentQuery->orWhereIn('routine_assignments.id', $activeAssignmentIds);
+                            }
+                        })
+                        ->ordered()
                         ->with(['routineItem', 'todayCompletion']);
                 },
             ])
@@ -71,6 +90,60 @@ return new class extends Component
         $timezone = \App\Models\Setting::get('timezone', config('app.timezone'));
 
         return is_string($timezone) && $timezone !== '' ? $timezone : config('app.timezone');
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function activeAssignmentIds(): array
+    {
+        $activeAssignmentIds = [];
+
+        foreach ($this->activeAssignmentIdsByChild as $assignmentIds) {
+            foreach ($assignmentIds as $assignmentId) {
+                $activeAssignmentIds[(int) $assignmentId] = true;
+            }
+        }
+
+        return array_map('intval', array_keys($activeAssignmentIds));
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $nextDeparture
+     * @return array<int, list<int>>
+     */
+    private function mapActiveAssignmentIdsByChild(?array $nextDeparture): array
+    {
+        if ($nextDeparture === null || ! array_key_exists('assignments', $nextDeparture)) {
+            return [];
+        }
+
+        $assignments = $nextDeparture['assignments'];
+
+        if (! is_iterable($assignments)) {
+            return [];
+        }
+
+        $assignmentIdsByChild = [];
+
+        foreach ($assignments as $assignment) {
+            if (! $assignment instanceof RoutineAssignment) {
+                continue;
+            }
+
+            $childId = (int) $assignment->child_id;
+            $assignmentId = (int) $assignment->id;
+
+            if (! isset($assignmentIdsByChild[$childId])) {
+                $assignmentIdsByChild[$childId] = [];
+            }
+
+            if (! in_array($assignmentId, $assignmentIdsByChild[$childId], true)) {
+                $assignmentIdsByChild[$childId][] = $assignmentId;
+            }
+        }
+
+        return $assignmentIdsByChild;
     }
 };
 ?>
@@ -118,7 +191,7 @@ return new class extends Component
 
         <div class="grid gap-5 md:grid-cols-2 md:gap-6">
             @forelse ($children as $child)
-                <livewire:dashboard.child-card :child="$child" wire:key="child-{{ $child->id }}" />
+                <livewire:dashboard.child-card :child="$child" :active-assignment-ids="$activeAssignmentIdsByChild[$child->id] ?? []" wire:key="child-{{ $child->id }}" />
             @empty
                 <div class="col-span-full flex flex-col items-center gap-3 rounded-3xl border border-dashed border-dash-border bg-dash-card p-10 text-center text-slate-400">
                     <flux:icon name="user-plus" variant="outline" class="size-8" />
