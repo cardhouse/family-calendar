@@ -1,4 +1,14 @@
 <laravel-boost-guidelines>
+=== .ai/front-end-verification rules ===
+
+# Front-End Verification Guidelines
+
+-   Use Pest Browser tests for UI smoke coverage whenever dashboard or component visuals change.
+-   Capture screenshots during front-end work to validate layout, spacing, and regressions before finalizing.
+-   For visual checks, include at least one light-mode and one dark-mode screenshot when relevant.
+-   Treat screenshots as a debugging and QA tool: compare before/after when changing Livewire or Flux UI interactions.
+-   Keep screenshot artifacts out of git by honoring `/tests/Browser/Screenshots` in `.gitignore`.
+
 === foundation rules ===
 
 # Laravel Boost Guidelines
@@ -76,6 +86,7 @@ This project has domain-specific skills available. You MUST activate the relevan
 
 - You should use the `tinker` tool when you need to execute PHP to debug code or query Eloquent models directly.
 - Use the `database-query` tool when you only need to read from the database.
+- Never delete, truncate, or otherwise remove application data while testing or debugging unless the user explicitly asks for that destructive action.
 
 ## Reading Browser Logs With the `browser-logs` Tool
 
@@ -101,6 +112,7 @@ This project has domain-specific skills available. You MUST activate the relevan
 
 # PHP
 
+- Always use strict typing at the head of a `.php` file: `declare(strict_types=1);`.
 - Always use curly braces for control structures, even for single-line bodies.
 
 ## Constructors

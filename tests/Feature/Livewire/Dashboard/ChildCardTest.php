@@ -27,9 +27,9 @@ it('toggles routine completion for a child assignment', function () {
     }]);
 
     Livewire::test('dashboard.child-card', ['child' => $child, 'activeAssignmentIds' => []])
-        ->assertDontSeeHtml('line-through')
+        ->assertDontSee('Completed for today')
         ->call('toggleCompletion', $assignment->id)
-        ->assertSeeHtml('line-through');
+        ->assertSee('Completed for today');
 
     expect(RoutineCompletion::query()->where('routine_assignment_id', $assignment->id)->exists())
         ->toBeTrue();
@@ -44,7 +44,7 @@ it('toggles routine completion for a child assignment', function () {
 
     Livewire::test('dashboard.child-card', ['child' => $child, 'activeAssignmentIds' => []])
         ->call('toggleCompletion', $assignment->id)
-        ->assertDontSeeHtml('line-through');
+        ->assertDontSee('Completed for today');
 
     expect(RoutineCompletion::query()->where('routine_assignment_id', $assignment->id)->exists())
         ->toBeFalse();
@@ -77,6 +77,75 @@ it('updates visibility when show completed is toggled', function () {
         ->assertSet('showCompleted', false);
 
     expect($component->get('visibleAssignments'))->toHaveCount(0);
+});
+
+it('hides and shows completed items while keeping incomplete items visible', function () {
+    $child = Child::factory()->create();
+    $completedItem = RoutineItemLibrary::factory()->create(['name' => 'Completed routine']);
+    $incompleteItem = RoutineItemLibrary::factory()->create(['name' => 'Incomplete routine']);
+
+    $completedAssignment = RoutineAssignment::factory()->create([
+        'child_id' => $child->id,
+        'routine_item_id' => $completedItem->id,
+    ]);
+
+    RoutineAssignment::factory()->create([
+        'child_id' => $child->id,
+        'routine_item_id' => $incompleteItem->id,
+    ]);
+
+    RoutineCompletion::factory()->create([
+        'routine_assignment_id' => $completedAssignment->id,
+        'completion_date' => now()->toDateString(),
+    ]);
+
+    $child->load(['routineAssignments' => function ($query) {
+        $query
+            ->whereNull('assignable_type')
+            ->whereNull('assignable_id')
+            ->with(['routineItem', 'todayCompletion'])
+            ->ordered();
+    }]);
+
+    Livewire::test('dashboard.child-card', ['child' => $child, 'activeAssignmentIds' => []])
+        ->assertSee('Completed routine')
+        ->assertSee('Incomplete routine')
+        ->dispatch('dashboard:toggle-completed', show: false)
+        ->assertDontSee('Completed routine')
+        ->assertSee('Incomplete routine')
+        ->dispatch('dashboard:toggle-completed', show: true)
+        ->assertSee('Completed routine')
+        ->assertSee('Incomplete routine');
+});
+
+it('allows expanding a collapsed completed card to review tasks', function () {
+    $child = Child::factory()->create();
+    $item = RoutineItemLibrary::factory()->create(['name' => 'Pack lunch']);
+
+    $assignment = RoutineAssignment::factory()->create([
+        'child_id' => $child->id,
+        'routine_item_id' => $item->id,
+    ]);
+
+    RoutineCompletion::factory()->create([
+        'routine_assignment_id' => $assignment->id,
+        'completion_date' => now()->toDateString(),
+    ]);
+
+    $child->load(['routineAssignments' => function ($query) {
+        $query
+            ->whereNull('assignable_type')
+            ->whereNull('assignable_id')
+            ->with(['routineItem', 'todayCompletion'])
+            ->ordered();
+    }]);
+
+    Livewire::test('dashboard.child-card', ['child' => $child, 'activeAssignmentIds' => []])
+        ->assertSee('Completed for today')
+        ->assertDontSee('Pack lunch')
+        ->call('expandCompletedCard')
+        ->assertSee('Pack lunch')
+        ->assertSee('All done! Great job!');
 });
 
 it('includes active departure assignments for the child card', function () {

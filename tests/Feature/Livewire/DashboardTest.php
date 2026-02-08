@@ -11,6 +11,11 @@ use App\Models\RoutineItemLibrary;
 use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
+it('renders deferred dashboard skeleton placeholders on initial load', function () {
+    Livewire::test('dashboard')
+        ->assertSee('data-flux-skeleton-group', false);
+});
+
 it('loads children with eager loaded assignments', function () {
     $child = Child::factory()->create(['display_order' => 1]);
     $items = RoutineItemLibrary::factory()->count(2)->create();
@@ -30,8 +35,8 @@ it('loads children with eager loaded assignments', function () {
         'starts_at' => now()->addDay(),
     ]);
 
-    $component = Livewire::test('dashboard');
-    $children = $component->get('children');
+    $checklistsTile = Livewire::test('dashboard.tiles.checklists');
+    $children = $checklistsTile->get('children');
 
     expect($children)->toHaveCount(1);
 
@@ -44,7 +49,7 @@ it('loads children with eager loaded assignments', function () {
     expect($assignment->relationLoaded('routineItem'))->toBeTrue()
         ->and($assignment->relationLoaded('todayCompletion'))->toBeTrue();
 
-    $events = $component->get('upcomingEvents');
+    $events = Livewire::test('dashboard.tiles.events')->get('upcomingEvents');
 
     expect($events)->toHaveCount(3);
 });
@@ -77,7 +82,7 @@ it('loads departure routines for the next departure on each child card', functio
         'display_order' => 1,
     ]);
 
-    $component = Livewire::test('dashboard');
+    $component = Livewire::test('dashboard.tiles.checklists');
 
     $children = $component->get('children');
     $activeAssignmentIdsByChild = $component->get('activeAssignmentIdsByChild');
@@ -87,4 +92,72 @@ it('loads departure routines for the next departure on each child card', functio
         ->and($children->first()->routineAssignments->pluck('id')->all())->toContain($departureAssignment->id);
 
     Carbon::setTestNow();
+});
+
+it('persists dragged bento tile layout order', function () {
+    $expectedTileOrder = [
+        'events',
+        'snapshot',
+        'crew',
+        'settings',
+        'checklists',
+    ];
+
+    Livewire::test('dashboard')
+        ->call('sortTile', 'events', 0)
+        ->assertSet('tileOrder', $expectedTileOrder)
+        ->assertSessionHas('dashboard.tile-order', $expectedTileOrder);
+});
+
+it('supports keyboard-friendly tile movement controls', function () {
+    Livewire::test('dashboard')
+        ->call('moveTileRight', 'snapshot')
+        ->assertSet('tileOrder', ['crew', 'snapshot', 'settings', 'checklists', 'events'])
+        ->assertSessionHas('dashboard.tile-order', ['crew', 'snapshot', 'settings', 'checklists', 'events'])
+        ->call('moveTileLeft', 'crew')
+        ->assertSet('tileOrder', ['crew', 'snapshot', 'settings', 'checklists', 'events'])
+        ->call('moveTileLeft', 'snapshot')
+        ->assertSet('tileOrder', ['snapshot', 'crew', 'settings', 'checklists', 'events']);
+});
+
+it('persists valid tile size updates', function () {
+    Livewire::test('dashboard')
+        ->call('updateTileSize', 'events', 'medium')
+        ->assertSet('tileSizes.events', 'medium')
+        ->assertSessionHas('dashboard.tile-sizes.events', 'medium');
+});
+
+it('rejects tile size updates that break row rules', function () {
+    Livewire::test('dashboard')
+        ->call('updateTileSize', 'snapshot', 'full')
+        ->assertSet('tileSizes.snapshot', 'large')
+        ->assertSessionHas('dashboard.tile-sizes.snapshot', 'large');
+});
+
+it('defaults to sunset-ember theme', function () {
+    Livewire::test('dashboard')
+        ->assertSet('dashboardTheme', 'sunset-ember');
+});
+
+it('switches theme with a valid enum value', function () {
+    Livewire::test('dashboard')
+        ->call('setTheme', 'northern-lights')
+        ->assertSet('dashboardTheme', 'northern-lights')
+        ->assertSessionHas('dashboard.theme', 'northern-lights');
+});
+
+it('ignores invalid theme values', function () {
+    Livewire::test('dashboard')
+        ->call('setTheme', 'invalid-theme')
+        ->assertSet('dashboardTheme', 'sunset-ember');
+});
+
+it('keeps settings tile visible and toggles other tiles', function () {
+    Livewire::test('dashboard')
+        ->call('toggleTileVisibility', 'settings')
+        ->assertSet('hiddenTileIds', [])
+        ->call('toggleTileVisibility', 'events')
+        ->assertSet('hiddenTileIds', ['events'])
+        ->assertDontSee('Calendar Lane')
+        ->assertSee('Dashboard Settings');
 });
